@@ -9,35 +9,60 @@ interface HabitListProps {
   onToggleHabit: (id: number, date: string) => void;
   onUpdateHabit: (id: number, name: string) => void;
   onDeleteHabit: (id: number) => void;
+  onUpdateStreak: (id: number, newStreak: number) => Promise<void>;
 }
 
-const calculateStreak = (completedDates: string[]): number => {
-  if (completedDates.length === 0) return 0;
+const calculateStreak = (completedDates: string[]): { currentStreak: number; bestStreak: number } => {
+  if (completedDates.length === 0) return { currentStreak: 0, bestStreak: 0 };
 
-  // Sort dates in ascending order
   const sortedDates = [...completedDates].sort((a, b) => 
     new Date(a).getTime() - new Date(b).getTime()
   );
 
   let currentStreak = 1;
-  let maxStreak = 1;
+  let bestStreak = 1;
+  let tempStreak = 1;
 
-  // Go through the dates and count consecutive completions
+  // Check if the last completion was today or yesterday
+  const lastDate = new Date(sortedDates[sortedDates.length - 1]);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  lastDate.setHours(0, 0, 0, 0);
+  
+  const diffDays = Math.floor((today.getTime() - lastDate.getTime()) / (24 * 60 * 60 * 1000));
+  
+  // If the last completion was more than a day ago, current streak is 0
+  if (diffDays > 1) {
+    currentStreak = 0;
+  }
+
+  // Calculate streaks
   for (let i = 1; i < sortedDates.length; i++) {
     const prevDate = new Date(sortedDates[i - 1]);
     const currDate = new Date(sortedDates[i]);
+    prevDate.setHours(0, 0, 0, 0);
+    currDate.setHours(0, 0, 0, 0);
     
-    // If dates are consecutive or same day, increment streak
-    if (currDate.getTime() - prevDate.getTime() <= 24 * 60 * 60 * 1000) {
-      currentStreak++;
-      maxStreak = Math.max(maxStreak, currentStreak);
+    const diffTime = currDate.getTime() - prevDate.getTime();
+    const diffDays = Math.floor(diffTime / (24 * 60 * 60 * 1000));
+    
+    if (diffDays === 1) {
+      tempStreak++;
+      bestStreak = Math.max(bestStreak, tempStreak);
+    } else if (diffDays === 0) {
+      // Same day completions don't affect streak
+      continue;
     } else {
-      // Reset streak counter when there's a gap
-      currentStreak = 1;
+      tempStreak = 1;
     }
   }
 
-  return maxStreak;
+  // Current streak should be the same as tempStreak if the last completion was today or yesterday
+  if (diffDays <= 1) {
+    currentStreak = tempStreak;
+  }
+
+  return { currentStreak, bestStreak };
 };
 
 export function HabitList({
@@ -47,6 +72,7 @@ export function HabitList({
   onToggleHabit,
   onUpdateHabit,
   onDeleteHabit,
+  onUpdateStreak,
 }: HabitListProps) {
   return (
     <table className="w-full">
@@ -62,10 +88,10 @@ export function HabitList({
             </th>
           ))}
           <th className="px-4 py-2 text-center dark:text-white">
+            Current Streak
+          </th>
+          <th className="px-4 py-2 text-center dark:text-white">
             Best Streak
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              consecutive completions
-            </div>
           </th>
           <th className="px-4 py-2 text-center dark:text-white">Actions</th>
         </tr>
@@ -78,6 +104,8 @@ export function HabitList({
                 type="text"
                 value={habit.name}
                 onChange={(e) => onUpdateHabit(habit.id, e.target.value)}
+                aria-label="Habit name"
+                placeholder="Enter habit name"
                 className="bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-gray-300 rounded px-2"
               />
             </td>
@@ -86,14 +114,28 @@ export function HabitList({
                 <input
                   type="checkbox"
                   checked={habit.completedDates.includes(date)}
-                  onChange={() => onToggleHabit(habit.id, date)}
+                  onChange={() => {
+                    onToggleHabit(habit.id, date);
+                    const newCompletedDates = habit.completedDates.includes(date)
+                      ? habit.completedDates.filter(d => d !== date)
+                      : [...habit.completedDates, date];
+                    
+                    const { currentStreak, bestStreak } = calculateStreak(newCompletedDates);
+                    onUpdateStreak(habit.id, bestStreak);
+                  }}
+                  aria-label={`Mark ${habit.name} as completed for ${date}`}
                   className="w-4 h-4 rounded border-gray-300 dark:border-gray-600"
                 />
               </td>
             ))}
             <td className="px-4 py-2 text-center">
               <span className="dark:text-white font-medium">
-                {calculateStreak(habit.completedDates)}
+                {calculateStreak(habit.completedDates).currentStreak}
+              </span>
+            </td>
+            <td className="px-4 py-2 text-center">
+              <span className="dark:text-white font-medium">
+                {calculateStreak(habit.completedDates).bestStreak}
               </span>
             </td>
             <td className="px-4 py-2 text-center">

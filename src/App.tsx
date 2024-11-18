@@ -137,15 +137,21 @@ export default function HabitTracker() {
     // Prevent negative streaks
     if (newStreak < 0) return;
 
-    // Update in database
-    await db.habits.update(id, { manualStreak: newStreak });
+    try {
+      // Update in database
+      await fetch(`http://localhost:5000/api/habits/${id}/streak`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ streak: newStreak }),
+      });
 
-    // Update state
-    setHabits(habits.map(habit =>
-      habit.id === id
-        ? { ...habit, manualStreak: newStreak }
-        : habit
-    ));
+      // Update state
+      setHabits(habits.map(habit =>
+        habit.id === id ? { ...habit, manualStreak: newStreak } : habit
+      ));
+    } catch (error) {
+      console.error('Error updating streak:', error);
+    }
   };
 
   return (
