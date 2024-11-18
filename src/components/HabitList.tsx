@@ -39,6 +39,7 @@ const calculateStreak = (completedDates: string[]): { currentStreak: number; bes
     currentStreak = 0;
   } else {
     // Start counting current streak from today
+    /* eslint-disable-next-line prefer-const */
     let checkDate = new Date(today);
     currentStreak = 1; // Start with 1 for today
 
@@ -88,35 +89,6 @@ const calculateStreak = (completedDates: string[]): { currentStreak: number; bes
 
   return { currentStreak, bestStreak };
 };
-
-const getCurrentWeekDates = () => {
-  // Start with Sunday (today's week)
-  const now = new Date();
-  const sunday = new Date(now);
-  sunday.setDate(now.getDate() - now.getDay());
-
-  const weekDates = [];
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(sunday);
-    date.setDate(sunday.getDate() + i);
-    // Format as YYYY-MM-DD
-    const formattedDate = date.toISOString().split('T')[0];
-    weekDates.push(formattedDate);
-  }
-
-  return weekDates;
-};
-
-// If you want Monday first, rotate the array
-const currentWeek = (() => {
-  const dates = getCurrentWeekDates();
-  // Move Sunday to the end
-  const sunday = dates.shift()!;
-  dates.push(sunday);
-  return dates;
-})();
-
-const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export function HabitList({
   habits,
@@ -183,7 +155,7 @@ export function HabitList({
                       ? habit.completedDates.filter(d => d !== date)
                       : [...habit.completedDates, date];
                     
-                    const { currentStreak, bestStreak } = calculateStreak(newCompletedDates);
+                    const { bestStreak } = calculateStreak(newCompletedDates);
                     onUpdateStreak(habit.id, bestStreak);
                   }}
                   aria-label={`Mark ${habit.name} as completed for ${date}`}
