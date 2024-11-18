@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { Habit } from '../types';
 
 interface HabitListProps {
@@ -9,8 +9,36 @@ interface HabitListProps {
   onToggleHabit: (id: number, date: string) => void;
   onUpdateHabit: (id: number, name: string) => void;
   onDeleteHabit: (id: number) => void;
-  onUpdateStreak: (id: number, streak: number) => void;
 }
+
+const calculateStreak = (completedDates: string[]): number => {
+  if (completedDates.length === 0) return 0;
+
+  // Sort dates in ascending order
+  const sortedDates = [...completedDates].sort((a, b) => 
+    new Date(a).getTime() - new Date(b).getTime()
+  );
+
+  let currentStreak = 1;
+  let maxStreak = 1;
+
+  // Go through the dates and count consecutive completions
+  for (let i = 1; i < sortedDates.length; i++) {
+    const prevDate = new Date(sortedDates[i - 1]);
+    const currDate = new Date(sortedDates[i]);
+    
+    // If dates are consecutive or same day, increment streak
+    if (currDate.getTime() - prevDate.getTime() <= 24 * 60 * 60 * 1000) {
+      currentStreak++;
+      maxStreak = Math.max(maxStreak, currentStreak);
+    } else {
+      // Reset streak counter when there's a gap
+      currentStreak = 1;
+    }
+  }
+
+  return maxStreak;
+};
 
 export function HabitList({
   habits,
@@ -19,7 +47,6 @@ export function HabitList({
   onToggleHabit,
   onUpdateHabit,
   onDeleteHabit,
-  onUpdateStreak
 }: HabitListProps) {
   return (
     <table className="w-full">
@@ -34,7 +61,12 @@ export function HabitList({
               </div>
             </th>
           ))}
-          <th className="px-4 py-2 text-center dark:text-white">Manual Streak</th>
+          <th className="px-4 py-2 text-center dark:text-white">
+            Best Streak
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              consecutive completions
+            </div>
+          </th>
           <th className="px-4 py-2 text-center dark:text-white">Actions</th>
         </tr>
       </thead>
@@ -60,23 +92,9 @@ export function HabitList({
               </td>
             ))}
             <td className="px-4 py-2 text-center">
-              <div className="flex items-center justify-center space-x-2">
-                <button
-                  onClick={() => onUpdateStreak(habit.id, (habit.manualStreak || 0) - 1)}
-                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
-                >
-                  <ChevronDown className="h-4 w-4 dark:text-white" />
-                </button>
-                <span className="dark:text-white min-w-[2rem]">
-                  {habit.manualStreak || 0}
-                </span>
-                <button
-                  onClick={() => onUpdateStreak(habit.id, (habit.manualStreak || 0) + 1)}
-                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
-                >
-                  <ChevronUp className="h-4 w-4 dark:text-white" />
-                </button>
-              </div>
+              <span className="dark:text-white font-medium">
+                {calculateStreak(habit.completedDates)}
+              </span>
             </td>
             <td className="px-4 py-2 text-center">
               <button

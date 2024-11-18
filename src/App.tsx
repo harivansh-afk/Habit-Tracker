@@ -11,8 +11,6 @@ export default function HabitTracker() {
   const [activeView, setActiveView] = useState<'habits' | 'calendar' | 'settings'>('habits');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [streakGoal, setStreakGoal] = useState(7);
-  const [showCompletedHabits, setShowCompletedHabits] = useState(true);
 
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -133,22 +131,6 @@ export default function HabitTracker() {
 
   const getCompletedHabitsForDate = (date: string) => {
     return habits.filter(habit => habit.completedDates.includes(date));
-  };
-
-  const getStreakForHabit = (habit: Habit) => {
-    let streak = 0;
-    const today = new Date();
-    for (let i = 0; i < streakGoal; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
-      const dateString = date.toISOString().split('T')[0];
-      if (habit.completedDates.includes(dateString)) {
-        streak++;
-      } else {
-        break;
-      }
-    }
-    return streak;
   };
 
   const handleUpdateStreak = async (id: number, newStreak: number) => {
@@ -293,27 +275,6 @@ export default function HabitTracker() {
                       <Moon className="h-5 w-5" />
                     )}
                   </button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="dark:text-white">Streak Goal</span>
-                  <select
-                    value={streakGoal}
-                    onChange={(e) => setStreakGoal(Number(e.target.value))}
-                    className="px-3 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                  >
-                    {[3, 5, 7, 10, 14, 21, 30].map(days => (
-                      <option key={days} value={days}>{days} days</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="dark:text-white">Show Completed Habits</span>
-                  <input
-                    type="checkbox"
-                    checked={showCompletedHabits}
-                    onChange={(e) => setShowCompletedHabits(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 dark:border-gray-600"
-                  />
                 </div>
               </div>
             </div>
