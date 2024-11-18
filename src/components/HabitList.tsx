@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { Habit } from '../types';
 
 interface HabitListProps {
@@ -9,7 +9,7 @@ interface HabitListProps {
   onToggleHabit: (id: number, date: string) => void;
   onUpdateHabit: (id: number, name: string) => void;
   onDeleteHabit: (id: number) => void;
-  getStreakForHabit: (habit: Habit) => number;
+  onUpdateStreak: (id: number, streak: number) => void;
 }
 
 export function HabitList({
@@ -19,7 +19,7 @@ export function HabitList({
   onToggleHabit,
   onUpdateHabit,
   onDeleteHabit,
-  getStreakForHabit
+  onUpdateStreak
 }: HabitListProps) {
   return (
     <table className="w-full">
@@ -34,7 +34,7 @@ export function HabitList({
               </div>
             </th>
           ))}
-          <th className="px-4 py-2 text-center dark:text-white">Streak</th>
+          <th className="px-4 py-2 text-center dark:text-white">Manual Streak</th>
           <th className="px-4 py-2 text-center dark:text-white">Actions</th>
         </tr>
       </thead>
@@ -59,8 +59,24 @@ export function HabitList({
                 />
               </td>
             ))}
-            <td className="px-4 py-2 text-center dark:text-white">
-              {getStreakForHabit(habit)}
+            <td className="px-4 py-2 text-center">
+              <div className="flex items-center justify-center space-x-2">
+                <button
+                  onClick={() => onUpdateStreak(habit.id, (habit.manualStreak || 0) - 1)}
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+                >
+                  <ChevronDown className="h-4 w-4 dark:text-white" />
+                </button>
+                <span className="dark:text-white min-w-[2rem]">
+                  {habit.manualStreak || 0}
+                </span>
+                <button
+                  onClick={() => onUpdateStreak(habit.id, (habit.manualStreak || 0) + 1)}
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+                >
+                  <ChevronUp className="h-4 w-4 dark:text-white" />
+                </button>
+              </div>
             </td>
             <td className="px-4 py-2 text-center">
               <button

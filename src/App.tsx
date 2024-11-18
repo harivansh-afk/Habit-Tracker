@@ -151,6 +151,21 @@ export default function HabitTracker() {
     return streak;
   };
 
+  const handleUpdateStreak = async (id: number, newStreak: number) => {
+    // Prevent negative streaks
+    if (newStreak < 0) return;
+
+    // Update in database
+    await db.habits.update(id, { manualStreak: newStreak });
+
+    // Update state
+    setHabits(habits.map(habit =>
+      habit.id === id
+        ? { ...habit, manualStreak: newStreak }
+        : habit
+    ));
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-black">
       <div className="flex h-screen">
@@ -246,7 +261,7 @@ export default function HabitTracker() {
                   onToggleHabit={toggleHabit}
                   onUpdateHabit={updateHabit}
                   onDeleteHabit={deleteHabit}
-                  getStreakForHabit={getStreakForHabit}
+                  onUpdateStreak={handleUpdateStreak}
                 />
               </div>
             </div>
