@@ -25,6 +25,7 @@ dist-ssr
 
 # Database files
 *.db
+habits.db
 *.db-journal
 *.sqlite
 *.sqlite3
