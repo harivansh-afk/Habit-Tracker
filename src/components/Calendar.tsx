@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useThemeContext } from '../contexts/ThemeContext';
 import { Habit } from '../types';
 
@@ -9,6 +9,7 @@ interface CalendarProps {
   onChangeMonth: (direction: 'prev' | 'next') => void;
   getDaysInMonth: (year: number, month: number) => number;
   getCompletedHabitsForDate: (date: string) => Habit[];
+  onToggleHabit: (habitId: number, date: string) => void;
 }
 
 export const Calendar: React.FC<CalendarProps> = ({
@@ -16,7 +17,8 @@ export const Calendar: React.FC<CalendarProps> = ({
   habits,
   onChangeMonth,
   getDaysInMonth,
-  getCompletedHabitsForDate
+  getCompletedHabitsForDate,
+  onToggleHabit
 }) => {
   const { theme } = useThemeContext();
   
@@ -34,6 +36,11 @@ export const Calendar: React.FC<CalendarProps> = ({
 
   // Get today's date in YYYY-MM-DD format
   const today = formatDate(new Date());
+
+  const handleToggleHabit = async (e: React.MouseEvent, habitId: number, date: string) => {
+    e.stopPropagation();
+    await onToggleHabit(habitId, date);
+  };
 
   return (
     <div className={`rounded-lg shadow-md p-6 ${theme.calendar.background}`}>
@@ -151,6 +158,7 @@ export const Calendar: React.FC<CalendarProps> = ({
                         `}
                       >
                         <div className={`
+                          pointer-events-auto 
                           rounded-lg p-4 
                           min-w-[200px] max-w-[300px]
                           ${theme.calendar.tooltip.background}
@@ -158,7 +166,6 @@ export const Calendar: React.FC<CalendarProps> = ({
                           ${theme.calendar.tooltip.shadow}
                           border
                           backdrop-blur-sm
-                          pointer-events-none
                         `}>
                           {completedHabits.length > 0 && (
                             <div className="mb-3">
@@ -167,8 +174,17 @@ export const Calendar: React.FC<CalendarProps> = ({
                               </span>
                               <ul className="space-y-1.5">
                                 {completedHabits.map(habit => (
-                                  <li key={habit.id} className={`${theme.text} text-sm truncate`}>
-                                    {habit.name}
+                                  <li 
+                                    key={habit.id} 
+                                    className={`${theme.text} text-sm truncate flex items-center justify-between`}
+                                  >
+                                    <span>{habit.name}</span>
+                                    <button
+                                      onClick={(e) => handleToggleHabit(e, habit.id, date)}
+                                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                                    >
+                                      <Check className="h-4 w-4 text-[#2ecc71]" />
+                                    </button>
                                   </li>
                                 ))}
                               </ul>
@@ -181,8 +197,17 @@ export const Calendar: React.FC<CalendarProps> = ({
                               </span>
                               <ul className="space-y-1.5">
                                 {incompleteHabits.map(habit => (
-                                  <li key={habit.id} className={`${theme.text} text-sm truncate`}>
-                                    {habit.name}
+                                  <li 
+                                    key={habit.id} 
+                                    className={`${theme.text} text-sm truncate flex items-center justify-between group`}
+                                  >
+                                    <span>{habit.name}</span>
+                                    <button
+                                      onClick={(e) => handleToggleHabit(e, habit.id, date)}
+                                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                      <Check className="h-4 w-4 text-gray-400 hover:text-[#2ecc71]" />
+                                    </button>
                                   </li>
                                 ))}
                               </ul>

@@ -8,9 +8,9 @@ import { useWeek } from './hooks/useWeek';
 import { ThemeProvider, useThemeContext } from './contexts/ThemeContext';
 
 function HabitTrackerContent() {
-  const { theme, isDark, toggleDarkMode } = useThemeContext();
+  const { theme, isDark, toggleDarkMode, defaultView, habitSort } = useThemeContext();
   const [newHabit, setNewHabit] = useState('');
-  const [activeView, setActiveView] = useState<'habits' | 'calendar' | 'settings'>('habits');
+  const [activeView, setActiveView] = useState<'habits' | 'calendar' | 'settings'>(defaultView);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const { 
@@ -63,6 +63,14 @@ function HabitTrackerContent() {
     setCurrentWeek(getCurrentWeekDates());
   };
 
+  const getSortedHabits = () => {
+    if (habitSort === 'alphabetical') {
+      return [...habits].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    // Default to dateCreated (assuming habits are already in creation order)
+    return habits;
+  };
+
   const renderHabitsView = () => (
     <div className="space-y-6">
       <form onSubmit={handleAddHabit} className="flex gap-2">
@@ -112,7 +120,7 @@ function HabitTrackerContent() {
         </div>
 
         <HabitList
-          habits={habits}
+          habits={getSortedHabits()}
           currentWeek={currentWeek}
           daysOfWeek={daysOfWeek}
           onToggleHabit={toggleHabit}
@@ -132,12 +140,40 @@ function HabitTrackerContent() {
       onChangeMonth={changeMonth}
       getDaysInMonth={(year, month) => new Date(year, month + 1, 0).getDate()}
       getCompletedHabitsForDate={getCompletedHabitsForDate}
+      onToggleHabit={async (habitId, date) => {
+        await toggleHabit(habitId, date);
+        await fetchHabits();
+      }}
     />
   );
 
   const renderSettingsView = () => {
-    const { theme, isDark, showStreaks, toggleDarkMode, toggleStreaks } = useThemeContext();
+    const { 
+      theme, 
+      isDark, 
+      showStreaks, 
+      dailyReminder, 
+      defaultView,
+      habitSort,
+      toggleDarkMode, 
+      toggleStreaks, 
+      toggleDailyReminder,
+      setDefaultView,
+      setHabitSort
+    } = useThemeContext();
     
+    const handleReminderToggle = () => {
+      if (!dailyReminder && Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            toggleDailyReminder();
+          }
+        });
+      } else {
+        toggleDailyReminder();
+      }
+    };
+
     return (
       <div className={`rounded-lg shadow p-6 ${theme.cardBackground}`}>
         <h2 className="text-2xl font-bold mb-6 dark:text-white">Settings</h2>
@@ -164,8 +200,6 @@ function HabitTrackerContent() {
                 relative inline-flex h-6 w-11 items-center rounded-full
                 transition-colors duration-200 ease-in-out
                 ${showStreaks ? 'bg-[#2ecc71]' : 'bg-gray-200 dark:bg-gray-700'}
-                focus:outline-none focus:ring-2 focus:ring-[#2ecc71] focus:ring-offset-2
-                dark:focus:ring-offset-gray-800
               `}
             >
               <span
@@ -176,6 +210,95 @@ function HabitTrackerContent() {
                 `}
               />
             </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="dark:text-white">Daily Reminder</span>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Get notified at 10:00 AM daily</p>
+            </div>
+            <button
+              onClick={handleReminderToggle}
+              className={`
+                relative inline-flex h-6 w-11 items-center rounded-full
+                transition-colors duration-200 ease-in-out
+                ${dailyReminder ? 'bg-[#2ecc71]' : 'bg-gray-200 dark:bg-gray-700'}
+              `}
+            >
+              <span
+                className={`
+                  inline-block h-4 w-4 transform rounded-full bg-white
+                  transition-transform duration-200 ease-in-out
+                  ${dailyReminder ? 'translate-x-6' : 'translate-x-1'}
+                `}
+              />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="dark:text-white">Default View</span>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Choose your starting page</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDefaultView('habits')}
+                className={`
+                  px-3 py-1.5 rounded-lg text-sm transition-colors duration-200
+                  ${defaultView === 'habits' 
+                    ? 'bg-[#2ecc71] text-white' 
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }
+                `}
+              >
+                Habits
+              </button>
+              <button
+                onClick={() => setDefaultView('calendar')}
+                className={`
+                  px-3 py-1.5 rounded-lg text-sm transition-colors duration-200
+                  ${defaultView === 'calendar' 
+                    ? 'bg-[#2ecc71] text-white' 
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }
+                `}
+              >
+                Calendar
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="dark:text-white">Sort Habits</span>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Choose how to order your habits</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setHabitSort('dateCreated')}
+                className={`
+                  px-3 py-1.5 rounded-lg text-sm transition-colors duration-200
+                  ${habitSort === 'dateCreated' 
+                    ? 'bg-[#2ecc71] text-white' 
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }
+                `}
+              >
+                Date Created
+              </button>
+              <button
+                onClick={() => setHabitSort('alphabetical')}
+                className={`
+                  px-3 py-1.5 rounded-lg text-sm transition-colors duration-200
+                  ${habitSort === 'alphabetical' 
+                    ? 'bg-[#2ecc71] text-white' 
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }
+                `}
+              >
+                Alphabetical
+              </button>
+            </div>
           </div>
         </div>
       </div>
