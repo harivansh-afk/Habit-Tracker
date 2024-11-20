@@ -83,7 +83,10 @@ function HabitTrackerContent() {
 
       <div className={`rounded-lg shadow p-6 ${theme.cardBackground}`}>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold dark:text-white">Weekly Progress</h2>
+          <div>
+            <h2 className="text-2xl font-bold dark:text-white">Your Habits</h2>
+            <p className="text-sm text-gray-400 dark:text-gray-300 mt-1">Track your weekly progress</p>
+          </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={goToCurrentWeek}
@@ -117,6 +120,7 @@ function HabitTrackerContent() {
           onDeleteHabit={deleteHabit}
           onUpdateStreak={updateStreak}
         />
+        <p className="text-sm text-gray-500 dark:text-gray-300 mt-4">Keep up the good work! Consistency is key.</p>
       </div>
     </div>
   );

@@ -128,14 +128,18 @@ export const Calendar: React.FC<CalendarProps> = ({
                     <div className="group relative inline-block">
                       <div 
                         className={`
-                          h-4 w-4 rounded-full cursor-pointer
-                          transition-colors duration-200
+                          h-5 px-2 rounded-full cursor-pointer
+                          transition-colors duration-200 flex items-center justify-center
                           ${completedHabits.length > 0 
                             ? 'bg-[#2ecc71] dark:bg-[#2ecc71] shadow-sm shadow-[#2ecc7150]' 
                             : `bg-[#e9e9e8] dark:bg-[#393939]`
                           }
                         `}
-                      />
+                      >
+                        <span className="text-[8px] font-medium text-black/70 dark:text-white/70">
+                          {completedHabits.length}/{habits.length}
+                        </span>
+                      </div>
                       <div 
                         className={`
                           absolute bottom-full left-1/2 -translate-x-1/2 mb-2 
