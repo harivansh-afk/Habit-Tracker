@@ -15,58 +15,61 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) =
   const { signOut } = useAuth();
   
   return (
-    <nav className={`w-64 border-r ${theme.border} ${theme.sidebarBackground} flex flex-col`}>
-      <div className="p-4">
+    <nav className={`w-72 h-screen sticky top-0 border-r ${theme.border} ${theme.sidebarBackground} flex flex-col`}>
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <h1 className={`text-2xl font-bold ${theme.text}`}>Habit Tracker</h1>
       </div>
-      <ul className="space-y-2 p-4 flex-grow">
-        <li>
-          <button
-            onClick={() => setActiveView('habits')}
-            className={`w-full px-4 py-2 text-left rounded-lg ${
-              activeView === 'habits'
-                ? theme.button.secondary
-                : `${theme.text} ${theme.habitItem}`
-            }`}
-          >
-            <Plus className="inline-block mr-2 h-4 w-4" />
-            Habits
-          </button>
-        </li>
-        <li>
-          <button
-            onClick={() => setActiveView('calendar')}
-            className={`w-full px-4 py-2 text-left rounded-lg ${
-              activeView === 'calendar'
-                ? theme.button.secondary
-                : `${theme.text} ${theme.habitItem}`
-            }`}
-          >
-            <CalendarIcon className="inline-block mr-2 h-4 w-4" />
-            Calendar
-          </button>
-        </li>
-        <li>
-          <button
-            onClick={() => setActiveView('settings')}
-            className={`w-full px-4 py-2 text-left rounded-lg ${
-              activeView === 'settings'
-                ? theme.button.secondary
-                : `${theme.text} ${theme.habitItem}`
-            }`}
-          >
-            <SettingsIcon className="inline-block mr-2 h-4 w-4" />
-            Settings
-          </button>
-        </li>
-      </ul>
-      <div className="p-4 border-t border-gray-200">
+      <div className="flex-grow overflow-y-auto">
+        <ul className="space-y-2 p-4">
+          <li>
+            <button
+              onClick={() => setActiveView('habits')}
+              className={`w-full px-6 py-3 text-left rounded-lg transition-all duration-200 flex items-center ${
+                activeView === 'habits'
+                  ? `${theme.button.secondary} shadow-md`
+                  : `${theme.text} ${theme.habitItem} hover:translate-x-1`
+              }`}
+            >
+              <Plus className="h-5 w-5 mr-3" />
+              <span className="font-medium">Habits</span>
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => setActiveView('calendar')}
+              className={`w-full px-6 py-3 text-left rounded-lg transition-all duration-200 flex items-center ${
+                activeView === 'calendar'
+                  ? `${theme.button.secondary} shadow-md`
+                  : `${theme.text} ${theme.habitItem} hover:translate-x-1`
+              }`}
+            >
+              <CalendarIcon className="h-5 w-5 mr-3" />
+              <span className="font-medium">Calendar</span>
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => setActiveView('settings')}
+              className={`w-full px-6 py-3 text-left rounded-lg transition-all duration-200 flex items-center ${
+                activeView === 'settings'
+                  ? `${theme.button.secondary} shadow-md`
+                  : `${theme.text} ${theme.habitItem} hover:translate-x-1`
+              }`}
+            >
+              <SettingsIcon className="h-5 w-5 mr-3" />
+              <span className="font-medium">Settings</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
         <button
           onClick={signOut}
-          className={`w-full px-4 py-2 text-left rounded-lg ${theme.text} ${theme.habitItem}`}
+          className={`w-full px-6 py-3 text-left rounded-lg transition-all duration-200 flex items-center
+            ${theme.text} ${theme.habitItem} hover:bg-red-500/10 hover:text-red-500`}
         >
-          <LogOut className="inline-block mr-2 h-4 w-4" />
-          Sign Out
+          <LogOut className="h-5 w-5 mr-3" />
+          <span className="font-medium">Sign Out</span>
         </button>
       </div>
     </nav>

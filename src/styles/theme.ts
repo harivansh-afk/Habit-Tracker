@@ -53,8 +53,8 @@ export const lightTheme = {
   
   // Navigation
   nav: {
-    active: 'bg-[#f1f1ef] text-[#37352f]',
-    inactive: 'text-[#37352f] hover:bg-[#f1f1ef]'
+    active: 'bg-[#f1f1ef]/80 text-[#37352f] shadow-inner',
+    inactive: 'text-[#37352f] hover:bg-[#f1f1ef]/50'
   }
 };
 
@@ -113,8 +113,8 @@ export const darkTheme = {
   
   // Navigation
   nav: {
-    active: 'bg-[#363636] text-[#ffffff]',
-    inactive: 'text-[#ffffff] hover:bg-[#363636]'
+    active: 'bg-[#363636]/80 text-white shadow-inner',
+    inactive: 'text-white/70 hover:bg-[#363636]/50'
   }
 };
 

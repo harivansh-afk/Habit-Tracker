@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Login } from './components/Login';
 import { SignUp } from './components/SignUp';
 import { SettingsView } from './components/SettingsView';
+import { MobileNav } from './components/MobileNav';
 
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -77,48 +78,56 @@ function HabitTrackerContent() {
   };
 
   const renderHabitsView = () => (
-    <div className="space-y-6">
-      <form onSubmit={handleAddHabit} className="flex gap-2">
-        <input
-          type="text"
-          value={newHabit}
-          onChange={(e) => setNewHabit(e.target.value)}
-          placeholder="Add a new habit"
-          className={`flex-grow px-4 py-2 border rounded-lg ${theme.input}`}
-        />
-        <button
-          type="submit"
-          className={`px-4 py-2 rounded-lg ${theme.button.primary}`}
-        >
-          Add Habit
-        </button>
-      </form>
+    <div className="flex-1">
+      <div className="max-w-5xl mx-auto">
+        <div className="mb-8 flex items-center gap-4">
+          <input
+            type="text"
+            value={newHabit}
+            onChange={(e) => setNewHabit(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && newHabit.trim()) {
+                handleAddHabit(e);
+              }
+            }}
+            placeholder="Add a new habit"
+            className={`flex-1 px-4 py-2 rounded-lg ${theme.input}`}
+          />
+          <button
+            onClick={handleAddHabit}
+            disabled={!newHabit.trim()}
+            className={`px-4 py-2 rounded-lg ${theme.button.primary} disabled:opacity-50`}
+          >
+            Add Habit
+          </button>
+        </div>
 
-      <div className={`rounded-lg shadow p-6 ${theme.cardBackground}`}>
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h2 className="text-2xl font-bold dark:text-white">Your Habits</h2>
-            <p className="text-sm text-gray-400 dark:text-gray-300 mt-1">Track your weekly progress</p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={goToCurrentWeek}
-              className={`px-4 py-2 rounded-lg ${theme.button.primary} text-sm`}
-            >
-              Today
-            </button>
-            <div className="flex space-x-2">
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className={`text-xl font-bold ${theme.text}`}>Your Habits</h2>
+              <p className={`text-sm ${theme.mutedText}`}>Track your weekly progress</p>
+            </div>
+            <div className="flex gap-2">
               <button
                 onClick={() => changeWeek('prev')}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+                className={`p-2 rounded-lg ${theme.button.icon}`}
               >
-                <ChevronLeft className="h-5 w-5 dark:text-white" />
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => {
+                  setCurrentWeek(getCurrentWeekDates());
+                }}
+                className={`px-4 py-2 rounded-lg ${theme.button.secondary}`}
+              >
+                Today
               </button>
               <button
                 onClick={() => changeWeek('next')}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+                className={`p-2 rounded-lg ${theme.button.icon}`}
               >
-                <ChevronRight className="h-5 w-5 dark:text-white" />
+                <ChevronRight className="h-5 w-5" />
               </button>
             </div>
           </div>
@@ -132,7 +141,9 @@ function HabitTrackerContent() {
           onUpdateHabit={updateHabit}
           onDeleteHabit={deleteHabit}
         />
-        <p className="text-sm text-gray-500 dark:text-gray-300 mt-4">Keep up the good work! Consistency is key.</p>
+        <p className={`text-sm ${theme.mutedText} mt-4`}>
+          Keep up the good work! Consistency is key.
+        </p>
       </div>
     </div>
   );
@@ -165,9 +176,14 @@ function HabitTrackerContent() {
 
   return (
     <div className={`min-h-screen ${theme.background}`}>
-      <div className="flex h-screen">
-        <Sidebar activeView={activeView} setActiveView={setActiveView} />
-        <main className="flex-1 p-8">
+      <div className="flex flex-col md:flex-row h-screen">
+        <div className="md:hidden">
+          <MobileNav activeView={activeView} setActiveView={setActiveView} />
+        </div>
+        <div className="hidden md:block">
+          <Sidebar activeView={activeView} setActiveView={setActiveView} />
+        </div>
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto pb-24 md:pb-8">
           {activeView === 'habits' && renderHabitsView()}
           {activeView === 'calendar' && renderCalendarView()}
           {activeView === 'settings' && <SettingsView />}

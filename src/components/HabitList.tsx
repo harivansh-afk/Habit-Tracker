@@ -41,19 +41,14 @@ export function HabitList({
               const date = new Date(dateStr);
               return (
                 <th key={dateStr} className="px-4 py-2 text-center dark:text-white">
-                  <div>{getDayName(dateStr)}</div>
+                  <div className="hidden md:block">{getDayName(dateStr)}</div>
+                  <div className="md:hidden">{getDayName(dateStr).slice(0, 1)}</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     {date.getDate()}
                   </div>
                 </th>
               );
             })}
-            {showStreaks && (
-              <>
-                <th className="px-4 py-2 text-center dark:text-white">Current Streak</th>
-                <th className="px-4 py-2 text-center dark:text-white">Best Streak</th>
-              </>
-            )}
             <th className="px-4 py-2 text-center dark:text-white">Actions</th>
           </tr>
         </thead>
@@ -65,9 +60,7 @@ export function HabitList({
                   type="text"
                   value={habit.name}
                   onChange={(e) => onUpdateHabit(habit.id, e.target.value)}
-                  aria-label="Habit name"
-                  placeholder="Enter habit name"
-                  className="bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-gray-300 rounded px-2"
+                  className="bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-gray-300 rounded px-2 w-full"
                 />
               </td>
               {currentWeek.map((date) => (
@@ -76,27 +69,26 @@ export function HabitList({
                     <input
                       type="checkbox"
                       checked={habit.completedDates.includes(date)}
-                      onChange={() => {
-                        onToggleHabit(habit.id, date);
-                      }}
-                      aria-label={`Mark ${habit.name} as completed for ${date}`}
+                      onChange={() => onToggleHabit(habit.id, date)}
                       className="sr-only"
                     />
-                    <div className={`
-                      w-6 h-6 rounded-md border-2 transition-all duration-200
-                      ${habit.completedDates.includes(date) 
-                        ? 'bg-green-500 border-green-500' 
-                        : 'border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-400'}
-                      flex items-center justify-center
-                    `}>
+                    <div
+                      className={`
+                        w-6 h-6 rounded-md border-2 transition-all duration-200
+                        ${habit.completedDates.includes(date)
+                          ? 'bg-green-500 border-green-500'
+                          : 'border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-400'}
+                        flex items-center justify-center
+                      `}
+                    >
                       {habit.completedDates.includes(date) && (
-                        <svg 
-                          className="w-4 h-4 text-white" 
-                          fill="none" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth="2" 
-                          viewBox="0 0 24 24" 
+                        <svg
+                          className="w-4 h-4 text-white"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
                           stroke="currentColor"
                         >
                           <path d="M5 13l4 4L19 7"></path>
@@ -106,20 +98,6 @@ export function HabitList({
                   </label>
                 </td>
               ))}
-              {showStreaks && (
-                <>
-                  <td className="px-4 py-2 text-center">
-                    <span className="text-yellow-500 dark:text-yellow-400 font-medium text-lg">
-                      {calculateStreak(habit.completedDates || []).currentStreak}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-center">
-                    <span className="text-yellow-500 dark:text-yellow-400 font-medium text-lg">
-                      {calculateStreak(habit.completedDates || []).bestStreak}
-                    </span>
-                  </td>
-                </>
-              )}
               <td className="px-4 py-2 text-center">
                 <button
                   onClick={() => onDeleteHabit(habit.id)}
