@@ -35,7 +35,9 @@ export const Calendar: React.FC<CalendarProps> = ({
   };
 
   // Get today's date in YYYY-MM-DD format
-  const today = formatDate(new Date());
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = formatDate(today);
 
   const handleToggleHabit = async (e: React.MouseEvent, habitId: number, date: string) => {
     e.stopPropagation();
@@ -115,7 +117,7 @@ export const Calendar: React.FC<CalendarProps> = ({
           return days.map(({ date, dayNumber, isCurrentMonth }) => {
             const completedHabits = getCompletedHabitsForDate(date);
             const incompleteHabits = habits.filter(habit => !habit.completedDates.includes(date));
-            const isToday = date === today;
+            const isToday = date === todayStr;
             
             return (
               <div
@@ -124,7 +126,13 @@ export const Calendar: React.FC<CalendarProps> = ({
                   border rounded-lg p-3 min-h-[80px] relative
                   ${theme.border}
                   ${isCurrentMonth ? theme.calendar.day.default : theme.calendar.day.otherMonth}
-                  ${isToday ? `border-2 ${theme.calendar.day.today}` : ''}
+                  ${isToday ? `
+                    border-2 
+                    ${theme.calendar.day.today}
+                    ring-2 ring-offset-2 ring-blue-500 dark:ring-blue-400
+                    bg-blue-50 dark:bg-blue-900/20
+                    shadow-sm
+                  ` : ''}
                 `}
               >
                 <span className={`font-medium ${isCurrentMonth ? theme.text : theme.calendar.day.otherMonth}`}>
