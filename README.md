@@ -5,9 +5,9 @@ A modern web application designed to help users build and maintain positive habi
 ## 🚀 Features
 
 - Daily habit tracking and management
-- Visual progress indicators
-- Customizable habit categories
-- Responsive design for mobile and desktop use
+- Visual calendar view of habit completion
+- Working current and best streak count for each habit
+- Responsive design for desktop use
 - User-friendly interface
 
 ## 🛠️ Technologies Used
@@ -21,6 +21,7 @@ A modern web application designed to help users build and maintain positive habi
 ## 🎯 Project Purpose
 
 This project was developed to demonstrate:
+
 - Modern front-end development practices
 - TypeScript implementation in a React environment
 - Clean code architecture
@@ -30,21 +31,25 @@ This project was developed to demonstrate:
 ## 🏗️ Installation
 
 1. Clone the repository
+
 ```bash
 git clone https://github.com/yourusername/habit-tracker.git
 ```
 
 2. Navigate to the project directory
+
 ```bash
 cd habit-tracker
 ```
 
 3. Install dependencies
+
 ```bash
 npm install
 ```
 
 4. Start the development server
+
 ```bash
 npm run dev
 ```
