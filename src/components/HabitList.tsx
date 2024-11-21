@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Trash2 } from 'lucide-react';
 import { Habit } from '../types';
 import { useThemeContext } from '../contexts/ThemeContext';
@@ -22,7 +22,15 @@ export function HabitList({
   onUpdateHabit,
   onDeleteHabit,
 }: HabitListProps) {
-  const { showStreaks } = useThemeContext();
+  const { habitSort, showStreaks } = useThemeContext();
+
+  const sortedHabits = useMemo(() => {
+    if (habitSort === 'alphabetical') {
+      return [...habits].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    // Default to dateCreated sort
+    return habits;
+  }, [habits, habitSort]);
 
   // Helper function to get day name
   const getDayName = (dateStr: string) => {
@@ -53,7 +61,7 @@ export function HabitList({
           </tr>
         </thead>
         <tbody>
-          {habits.map((habit) => (
+          {sortedHabits.map((habit) => (
             <tr key={habit.id} className="border-t dark:border-gray-700">
               <td className="px-4 py-2 dark:text-white">
                 <input
@@ -106,6 +114,13 @@ export function HabitList({
                   <Trash2 className="h-4 w-4" />
                 </button>
               </td>
+              {showStreaks && (
+                <>
+                  <td className="px-4 py-2 text-center">
+                    {/* ... streak content ... */}
+                  </td>
+                </>
+              )}
             </tr>
           ))}
         </tbody>

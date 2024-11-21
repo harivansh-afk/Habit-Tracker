@@ -11,6 +11,7 @@ import { Login } from './components/Login';
 import { SignUp } from './components/SignUp';
 import { SettingsView } from './components/SettingsView';
 import { MobileNav } from './components/MobileNav';
+import { PreferencesProvider, usePreferences } from './contexts/PreferencesContext';
 
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -21,6 +22,7 @@ function HabitTrackerContent() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const { user, loading, signOut } = useAuth();
   const [authView, setAuthView] = useState<'login' | 'signup'>('login');
+  const { preferences } = usePreferences();
 
   const { 
     habits, 
@@ -42,6 +44,12 @@ function HabitTrackerContent() {
     fetchHabits();
     setCurrentWeek(getCurrentWeekDates());
   }, []);
+
+  useEffect(() => {
+    if (preferences?.default_view) {
+      setActiveView(preferences.default_view);
+    }
+  }, [preferences?.default_view]);
 
   const handleAddHabit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -196,9 +204,11 @@ function HabitTrackerContent() {
 export default function HabitTracker() {
   return (
     <AuthProvider>
-      <ThemeProvider>
-        <HabitTrackerContent />
-      </ThemeProvider>
+      <PreferencesProvider>
+        <ThemeProvider>
+          <HabitTrackerContent />
+        </ThemeProvider>
+      </PreferencesProvider>
     </AuthProvider>
   );
 }
