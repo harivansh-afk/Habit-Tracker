@@ -37,7 +37,7 @@ export const lightTheme = {
     day: {
       default: 'bg-[#ffffff] hover:bg-[#f1f1ef] text-[#37352f] shadow-sm',
       selected: 'bg-[#37352f] text-white',
-      today: 'border border-black/20 bg-blue-50/10',
+      today: 'ring-1 ring-inset ring-black/5 dark:ring-white/5',
       otherMonth: 'text-[#787774] bg-[#fafafa]'
     },
     navigation: {
@@ -97,7 +97,7 @@ export const darkTheme = {
     day: {
       default: 'bg-[#2f2f2f] hover:bg-[#363636] text-[#ffffff] shadow-md shadow-[#00000030]',
       selected: 'bg-[#ffffff] text-[#191919]',
-      today: 'border border-white/20 bg-blue-900/5',
+      today: 'ring-1 ring-inset ring-white/10',
       otherMonth: 'text-[#666666] bg-[#242424]'
     },
     navigation: {
