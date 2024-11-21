@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Trash2 } from 'lucide-react';
 import { Habit } from '../types';
 import { useThemeContext } from '../contexts/ThemeContext';
+import { calculateStreak } from '../utils/streakCalculator';
 
 interface HabitListProps {
   habits: Habit[];
@@ -10,82 +11,8 @@ interface HabitListProps {
   onToggleHabit: (id: number, date: string) => void;
   onUpdateHabit: (id: number, name: string) => void;
   onDeleteHabit: (id: number) => void;
-  onUpdateStreak: (id: number, newStreak: number) => Promise<void>;
+  onUpdateStreak?: (id: number, newStreak: number) => Promise<void>;
 }
-
-const calculateStreak = (completedDates: string[]): { currentStreak: number; bestStreak: number } => {
-  if (!completedDates || completedDates.length === 0) {
-    return { currentStreak: 0, bestStreak: 0 };
-  }
-
-  // Get today at midnight in UTC
-  const today = new Date();
-  const utcToday = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
-  
-  const todayStr = utcToday.toISOString().split('T')[0];
-
-  // Sort dates in descending order (most recent first)
-  const sortedDates = [...completedDates]
-    .filter(date => !isNaN(new Date(date).getTime()))
-    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-
-  let currentStreak = 0;
-  let bestStreak = 0;
-  let tempStreak = 0;
-
-  // Check if today is completed to maintain streak
-  const hasTodayCompleted = sortedDates.includes(todayStr);
-  
-  // Initialize current streak based on today's completion
-  if (hasTodayCompleted) {
-    currentStreak = 1;
-    let checkDate = new Date(utcToday);
-    
-    // Check previous days
-    while (true) {
-      checkDate.setUTCDate(checkDate.getUTCDate() - 1);
-      const dateStr = checkDate.toISOString().split('T')[0];
-      
-      if (sortedDates.includes(dateStr)) {
-        currentStreak++;
-      } else {
-        break;
-      }
-    }
-  }
-
-  // Calculate best streak
-  for (let i = 0; i < sortedDates.length; i++) {
-    const currentDate = new Date(sortedDates[i]);
-    currentDate.setHours(0, 0, 0, 0); // Normalize time part for comparison
-    
-    if (i === 0) {
-      tempStreak = 1;
-    } else {
-      const prevDate = new Date(sortedDates[i - 1]);
-      const diffDays = Math.floor(
-        (prevDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)
-      );
-      
-      if (diffDays === 1) {
-        tempStreak++;
-      } else if (diffDays === 0) {
-        // Same day, skip
-        continue;
-      } else {
-        // Reset streak on gap
-        bestStreak = Math.max(bestStreak, tempStreak);
-        tempStreak = 1;
-      }
-    }
-  }
-
-  // Final check for best streak
-  bestStreak = Math.max(bestStreak, tempStreak);
-  bestStreak = Math.max(bestStreak, currentStreak);
-
-  return { currentStreak, bestStreak };
-};
 
 export function HabitList({
   habits,
@@ -94,17 +21,15 @@ export function HabitList({
   onToggleHabit,
   onUpdateHabit,
   onDeleteHabit,
-  onUpdateStreak,
 }: HabitListProps) {
   const { showStreaks } = useThemeContext();
-  
-  useEffect(() => {
-    console.log('Current week dates:', 
-      currentWeek.map(date => 
-        `${new Date(date).toLocaleDateString()} (${daysOfWeek[new Date(date).getDay() === 0 ? 6 : new Date(date).getDay() - 1]})`
-      )
-    );
-  }, []);
+
+  // Helper function to get day name
+  const getDayName = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
+    return daysOfWeek[dayIndex];
+  };
 
   return (
     <div className="overflow-x-auto">
@@ -112,13 +37,11 @@ export function HabitList({
         <thead>
           <tr>
             <th className="text-left px-4 py-2 dark:text-white">Habit</th>
-            {currentWeek.map((dateStr, index) => {
+            {currentWeek.map((dateStr) => {
               const date = new Date(dateStr);
-              const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
-              
               return (
                 <th key={dateStr} className="px-4 py-2 text-center dark:text-white">
-                  <div>{daysOfWeek[dayIndex]}</div>
+                  <div>{getDayName(dateStr)}</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     {date.getDate()}
                   </div>
@@ -155,12 +78,6 @@ export function HabitList({
                       checked={habit.completedDates.includes(date)}
                       onChange={() => {
                         onToggleHabit(habit.id, date);
-                        const newCompletedDates = habit.completedDates.includes(date)
-                          ? habit.completedDates.filter(d => d !== date)
-                          : [...habit.completedDates, date];
-                        
-                        const { bestStreak } = calculateStreak(newCompletedDates);
-                        onUpdateStreak(habit.id, bestStreak);
                       }}
                       aria-label={`Mark ${habit.name} as completed for ${date}`}
                       className="sr-only"

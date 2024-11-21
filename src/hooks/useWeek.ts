@@ -5,23 +5,38 @@ export const useWeek = () => {
 
   const getCurrentWeekDates = () => {
     const now = new Date();
-    const dayOfWeek = now.getDay();
-    const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    const monday = new Date(now.setDate(diff));
+    const currentDay = now.getDay();
+    const diff = currentDay === 0 ? -6 : 1 - currentDay;
+    
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diff);
+    monday.setHours(0, 0, 0, 0);
+    
     return Array.from({ length: 7 }, (_, i) => {
       const date = new Date(monday);
       date.setDate(monday.getDate() + i);
-      return date.toISOString().split('T')[0];
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     });
   };
 
   const changeWeek = (direction: 'prev' | 'next') => {
+    if (currentWeek.length === 0) return;
+    
     const firstDay = new Date(currentWeek[0]);
-    const newFirstDay = new Date(firstDay.setDate(firstDay.getDate() + (direction === 'prev' ? -7 : 7)));
+    firstDay.setHours(0, 0, 0, 0);
+    const newFirstDay = new Date(firstDay);
+    newFirstDay.setDate(firstDay.getDate() + (direction === 'prev' ? -7 : 7));
+    
     setCurrentWeek(Array.from({ length: 7 }, (_, i) => {
       const date = new Date(newFirstDay);
       date.setDate(newFirstDay.getDate() + i);
-      return date.toISOString().split('T')[0];
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     }));
   };
 

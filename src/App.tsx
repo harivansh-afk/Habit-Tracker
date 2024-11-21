@@ -6,12 +6,20 @@ import { Sidebar } from './components/Sidebar';
 import { useHabits } from './hooks/useHabits';
 import { useWeek } from './hooks/useWeek';
 import { ThemeProvider, useThemeContext } from './contexts/ThemeContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Login } from './components/Login';
+import { SignUp } from './components/SignUp';
+import { SettingsView } from './components/SettingsView';
+
+const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 function HabitTrackerContent() {
   const { theme, isDark, toggleDarkMode, defaultView, habitSort } = useThemeContext();
   const [newHabit, setNewHabit] = useState('');
   const [activeView, setActiveView] = useState<'habits' | 'calendar' | 'settings'>(defaultView);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const { user, loading, signOut } = useAuth();
+  const [authView, setAuthView] = useState<'login' | 'signup'>('login');
 
   const { 
     habits, 
@@ -19,8 +27,7 @@ function HabitTrackerContent() {
     addHabit: addHabitApi, 
     toggleHabit, 
     updateHabit, 
-    deleteHabit, 
-    updateStreak 
+    deleteHabit 
   } = useHabits();
   
   const { 
@@ -29,8 +36,6 @@ function HabitTrackerContent() {
     getCurrentWeekDates, 
     changeWeek 
   } = useWeek();
-
-  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   useEffect(() => {
     fetchHabits();
@@ -122,11 +127,10 @@ function HabitTrackerContent() {
         <HabitList
           habits={getSortedHabits()}
           currentWeek={currentWeek}
-          daysOfWeek={daysOfWeek}
+          daysOfWeek={DAYS_OF_WEEK}
           onToggleHabit={toggleHabit}
           onUpdateHabit={updateHabit}
           onDeleteHabit={deleteHabit}
-          onUpdateStreak={updateStreak}
         />
         <p className="text-sm text-gray-500 dark:text-gray-300 mt-4">Keep up the good work! Consistency is key.</p>
       </div>
@@ -147,163 +151,17 @@ function HabitTrackerContent() {
     />
   );
 
-  const renderSettingsView = () => {
-    const { 
-      theme, 
-      isDark, 
-      showStreaks, 
-      dailyReminder, 
-      defaultView,
-      habitSort,
-      toggleDarkMode, 
-      toggleStreaks, 
-      toggleDailyReminder,
-      setDefaultView,
-      setHabitSort
-    } = useThemeContext();
-    
-    const handleReminderToggle = () => {
-      if (!dailyReminder && Notification.permission === 'default') {
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted') {
-            toggleDailyReminder();
-          }
-        });
-      } else {
-        toggleDailyReminder();
-      }
-    };
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-    return (
-      <div className={`rounded-lg shadow p-6 ${theme.cardBackground}`}>
-        <h2 className="text-2xl font-bold mb-6 dark:text-white">Settings</h2>
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <span className="dark:text-white">Dark Mode</span>
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              {isDark ? (
-                <Sun className="h-5 w-5 dark:text-white" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </button>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <span className="dark:text-white">Show Streaks</span>
-            <button
-              onClick={toggleStreaks}
-              className={`
-                relative inline-flex h-6 w-11 items-center rounded-full
-                transition-colors duration-200 ease-in-out
-                ${showStreaks ? 'bg-[#2ecc71]' : 'bg-gray-200 dark:bg-gray-700'}
-              `}
-            >
-              <span
-                className={`
-                  inline-block h-4 w-4 transform rounded-full bg-white
-                  transition-transform duration-200 ease-in-out
-                  ${showStreaks ? 'translate-x-6' : 'translate-x-1'}
-                `}
-              />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="dark:text-white">Daily Reminder</span>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Get notified at 10:00 AM daily</p>
-            </div>
-            <button
-              onClick={handleReminderToggle}
-              className={`
-                relative inline-flex h-6 w-11 items-center rounded-full
-                transition-colors duration-200 ease-in-out
-                ${dailyReminder ? 'bg-[#2ecc71]' : 'bg-gray-200 dark:bg-gray-700'}
-              `}
-            >
-              <span
-                className={`
-                  inline-block h-4 w-4 transform rounded-full bg-white
-                  transition-transform duration-200 ease-in-out
-                  ${dailyReminder ? 'translate-x-6' : 'translate-x-1'}
-                `}
-              />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="dark:text-white">Default View</span>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Choose your starting page</p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setDefaultView('habits')}
-                className={`
-                  px-3 py-1.5 rounded-lg text-sm transition-colors duration-200
-                  ${defaultView === 'habits' 
-                    ? 'bg-[#2ecc71] text-white' 
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                  }
-                `}
-              >
-                Habits
-              </button>
-              <button
-                onClick={() => setDefaultView('calendar')}
-                className={`
-                  px-3 py-1.5 rounded-lg text-sm transition-colors duration-200
-                  ${defaultView === 'calendar' 
-                    ? 'bg-[#2ecc71] text-white' 
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                  }
-                `}
-              >
-                Calendar
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="dark:text-white">Sort Habits</span>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Choose how to order your habits</p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setHabitSort('dateCreated')}
-                className={`
-                  px-3 py-1.5 rounded-lg text-sm transition-colors duration-200
-                  ${habitSort === 'dateCreated' 
-                    ? 'bg-[#2ecc71] text-white' 
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                  }
-                `}
-              >
-                Date Created
-              </button>
-              <button
-                onClick={() => setHabitSort('alphabetical')}
-                className={`
-                  px-3 py-1.5 rounded-lg text-sm transition-colors duration-200
-                  ${habitSort === 'alphabetical' 
-                    ? 'bg-[#2ecc71] text-white' 
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                  }
-                `}
-              >
-                Alphabetical
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+  if (!user) {
+    return authView === 'login' ? (
+      <Login onSwitchToSignUp={() => setAuthView('signup')} />
+    ) : (
+      <SignUp onSwitchToLogin={() => setAuthView('login')} />
     );
-  };
+  }
 
   return (
     <div className={`min-h-screen ${theme.background}`}>
@@ -312,7 +170,7 @@ function HabitTrackerContent() {
         <main className="flex-1 p-8">
           {activeView === 'habits' && renderHabitsView()}
           {activeView === 'calendar' && renderCalendarView()}
-          {activeView === 'settings' && renderSettingsView()}
+          {activeView === 'settings' && <SettingsView />}
         </main>
       </div>
     </div>
@@ -321,8 +179,10 @@ function HabitTrackerContent() {
 
 export default function HabitTracker() {
   return (
-    <ThemeProvider>
-      <HabitTrackerContent />
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider>
+        <HabitTrackerContent />
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
