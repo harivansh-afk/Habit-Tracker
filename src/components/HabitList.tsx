@@ -18,10 +18,11 @@ const calculateStreak = (completedDates: string[]): { currentStreak: number; bes
     return { currentStreak: 0, bestStreak: 0 };
   }
 
-  // Get today's date at midnight
+  // Get today at midnight in UTC
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayStr = today.toISOString().split('T')[0];
+  const utcToday = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+  
+  const todayStr = utcToday.toISOString().split('T')[0];
 
   // Sort dates in descending order (most recent first)
   const sortedDates = [...completedDates]
@@ -32,28 +33,23 @@ const calculateStreak = (completedDates: string[]): { currentStreak: number; bes
   let bestStreak = 0;
   let tempStreak = 0;
 
-  // First, check if today is completed
+  // Check if today is completed to maintain streak
   const hasTodayCompleted = sortedDates.includes(todayStr);
   
-  if (!hasTodayCompleted) {
-    // If today isn't completed, current streak is 0
-    currentStreak = 0;
-  } else {
-    // Start counting current streak from today
-    /* eslint-disable-next-line prefer-const */
-    let checkDate = new Date(today);
-    currentStreak = 1; // Start with 1 for today
-
+  // Initialize current streak based on today's completion
+  if (hasTodayCompleted) {
+    currentStreak = 1;
+    let checkDate = new Date(utcToday);
+    
     // Check previous days
     while (true) {
-      // Move to previous day
-      checkDate.setDate(checkDate.getDate() - 1);
+      checkDate.setUTCDate(checkDate.getUTCDate() - 1);
       const dateStr = checkDate.toISOString().split('T')[0];
       
       if (sortedDates.includes(dateStr)) {
         currentStreak++;
       } else {
-        break; // Break streak if a day is missed
+        break;
       }
     }
   }
@@ -61,6 +57,7 @@ const calculateStreak = (completedDates: string[]): { currentStreak: number; bes
   // Calculate best streak
   for (let i = 0; i < sortedDates.length; i++) {
     const currentDate = new Date(sortedDates[i]);
+    currentDate.setHours(0, 0, 0, 0); // Normalize time part for comparison
     
     if (i === 0) {
       tempStreak = 1;
@@ -82,10 +79,9 @@ const calculateStreak = (completedDates: string[]): { currentStreak: number; bes
       }
     }
   }
-  
+
   // Final check for best streak
   bestStreak = Math.max(bestStreak, tempStreak);
-  // Also check if current streak is the best
   bestStreak = Math.max(bestStreak, currentStreak);
 
   return { currentStreak, bestStreak };
@@ -118,13 +114,13 @@ export function HabitList({
             <th className="text-left px-4 py-2 dark:text-white">Habit</th>
             {currentWeek.map((dateStr, index) => {
               const date = new Date(dateStr);
-              const displayDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+              const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
               
               return (
                 <th key={dateStr} className="px-4 py-2 text-center dark:text-white">
-                  <div>{daysOfWeek[index]}</div>
+                  <div>{daysOfWeek[dayIndex]}</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {displayDate.getDate()}
+                    {date.getDate()}
                   </div>
                 </th>
               );
