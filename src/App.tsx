@@ -30,7 +30,8 @@ function HabitTrackerContent() {
     addHabit: addHabitApi, 
     toggleHabit, 
     updateHabit, 
-    deleteHabit 
+    deleteHabit, 
+    error 
   } = useHabits();
   
   const { 
@@ -88,26 +89,23 @@ function HabitTrackerContent() {
   const renderHabitsView = () => (
     <div className="flex-1">
       <div className="max-w-5xl mx-auto">
-        <div className="mb-8 flex items-center gap-4">
-          <input
-            type="text"
-            value={newHabit}
-            onChange={(e) => setNewHabit(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && newHabit.trim()) {
-                handleAddHabit(e);
-              }
-            }}
-            placeholder="Add a new habit"
-            className={`flex-1 px-4 py-2 rounded-lg ${theme.input}`}
-          />
-          <button
-            onClick={handleAddHabit}
-            disabled={!newHabit.trim()}
-            className={`px-4 py-2 rounded-lg ${theme.button.primary} disabled:opacity-50`}
-          >
-            Add Habit
-          </button>
+        <div className="mb-8">
+          <form onSubmit={handleAddHabit} className="flex items-center gap-4">
+            <input
+              type="text"
+              value={newHabit}
+              onChange={(e) => setNewHabit(e.target.value)}
+              placeholder="Add a new habit"
+              className={`flex-1 px-4 py-2 rounded-lg ${theme.input}`}
+            />
+            <button
+              type="submit"
+              disabled={!newHabit.trim()}
+              className={`px-4 py-2 rounded-lg ${theme.button.primary} disabled:opacity-50`}
+            >
+              Add Habit
+            </button>
+          </form>
         </div>
 
         <div className="mb-6">
@@ -124,9 +122,7 @@ function HabitTrackerContent() {
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <button
-                onClick={() => {
-                  setCurrentWeek(getCurrentWeekDates());
-                }}
+                onClick={goToCurrentWeek}
                 className={`px-4 py-2 rounded-lg ${theme.button.secondary}`}
               >
                 Today
@@ -141,17 +137,35 @@ function HabitTrackerContent() {
           </div>
         </div>
 
-        <HabitList
-          habits={getSortedHabits()}
-          currentWeek={currentWeek}
-          daysOfWeek={DAYS_OF_WEEK}
-          onToggleHabit={toggleHabit}
-          onUpdateHabit={updateHabit}
-          onDeleteHabit={deleteHabit}
-        />
-        <p className={`text-sm ${theme.mutedText} mt-4`}>
-          Keep up the good work! Consistency is key.
-        </p>
+        {loading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+          </div>
+        ) : error ? (
+          <div className="text-red-500 text-center py-4">
+            {error}
+            <button
+              onClick={fetchHabits}
+              className="ml-2 text-blue-500 hover:underline"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <>
+            <HabitList
+              habits={getSortedHabits()}
+              currentWeek={currentWeek}
+              daysOfWeek={DAYS_OF_WEEK}
+              onToggleHabit={toggleHabit}
+              onUpdateHabit={updateHabit}
+              onDeleteHabit={deleteHabit}
+            />
+            <p className={`text-sm ${theme.mutedText} mt-4`}>
+              Keep up the good work! Consistency is key.
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

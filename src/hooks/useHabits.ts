@@ -3,27 +3,34 @@ import { supabase } from '../lib/supabase';
 import { Habit } from '../types';
 import { calculateStreak } from '../utils/streakCalculator';
 import { useAuth } from '../contexts/AuthContext';
+import { formatDate } from '../utils/dateUtils';
 
 export const useHabits = () => {
   const [habits, setHabits] = useState<Habit[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  // Automatically fetch habits when user changes
   useEffect(() => {
     if (user) {
       fetchHabits();
     } else {
-      setHabits([]); // Clear habits when user logs out
+      setHabits([]);
+      setLoading(false);
     }
-  }, [user?.id]); // Depend on user.id to prevent unnecessary rerenders
+  }, [user?.id]);
 
   const fetchHabits = async () => {
     if (!user) {
       setHabits([]);
+      setLoading(false);
       return;
     }
     
     try {
+      setLoading(true);
+      setError(null);
+      
       const { data, error } = await supabase
         .from('habits')
         .select(`
@@ -40,7 +47,7 @@ export const useHabits = () => {
 
       if (error) throw error;
 
-      const formattedHabits = (data || []).map(habit => ({
+      const formattedHabits = data.map(habit => ({
         id: habit.id,
         name: habit.name,
         created_at: habit.created_at,
@@ -51,157 +58,144 @@ export const useHabits = () => {
       }));
 
       setHabits(formattedHabits);
-    } catch (error) {
-      console.error('Error fetching habits:', error);
-      setHabits([]);
+    } catch (err) {
+      console.error('Error fetching habits:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch habits');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const addHabit = async (name: string) => {
-    if (!user) return false;
+  const addHabit = async (name: string): Promise<boolean> => {
+    if (!user || !name.trim()) return false;
     
     try {
       const { data, error } = await supabase
         .from('habits')
         .insert([{ 
-          name, 
-          best_streak: 0,
+          name: name.trim(), 
+          user_id: user.id,
           created_at: new Date().toISOString(),
-          user_id: user.id
+          best_streak: 0
         }])
-        .select('id')
+        .select()
         .single();
 
       if (error) throw error;
-      
+
       await fetchHabits();
       return true;
-    } catch (error) {
-      console.error('Error adding habit:', error);
+    } catch (err) {
+      console.error('Error adding habit:', err);
+      setError(err instanceof Error ? err.message : 'Failed to add habit');
       return false;
     }
   };
 
-  const toggleHabit = async (id: number, date: string) => {
+  const toggleHabit = async (id: number, date: string): Promise<void> => {
     if (!user) return;
     
     try {
-      // First verify this habit belongs to the user
-      const { data: habitData, error: habitError } = await supabase
-        .from('habits')
-        .select('id')
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .single();
+      const isCompleted = habits
+        .find(h => h.id === id)
+        ?.completedDates.includes(date);
 
-      if (habitError || !habitData) {
-        throw new Error('Unauthorized access to habit');
-      }
-
-      // Keep the original date string without any timezone conversion
-      const formattedDate = date;
-
-      console.log('Toggling habit:', { id, date, formattedDate });
-
-      // Check for existing completion
-      const { data: existing, error: existingError } = await supabase
-        .from('habit_completions')
-        .select('*')
-        .eq('habit_id', id)
-        .eq('completion_date', formattedDate)
-        .eq('user_id', user.id)
-        .single();
-
-      if (existingError && existingError.code !== 'PGRST116') {
-        throw existingError;
-      }
-
-      if (existing) {
-        const { error: deleteError } = await supabase
+      if (isCompleted) {
+        // Remove completion
+        const { error } = await supabase
           .from('habit_completions')
           .delete()
           .eq('habit_id', id)
-          .eq('completion_date', formattedDate)
-          .eq('user_id', user.id);
+          .eq('completion_date', date);
 
-        if (deleteError) throw deleteError;
+        if (error) throw error;
       } else {
-        const { error: insertError } = await supabase
+        // Add completion
+        const { error } = await supabase
           .from('habit_completions')
-          .insert([{ 
-            habit_id: id, 
-            completion_date: formattedDate,
+          .insert({
+            habit_id: id,
+            completion_date: date,
             user_id: user.id
-          }]);
+          });
 
-        if (insertError) throw insertError;
+        if (error) throw error;
       }
 
+      // Update local state optimistically
+      setHabits(prevHabits =>
+        prevHabits.map(h => {
+          if (h.id !== id) return h;
+          return {
+            ...h,
+            completedDates: isCompleted
+              ? h.completedDates.filter(d => d !== date)
+              : [...h.completedDates, date]
+          };
+        })
+      );
+
+      // Fetch updated data to ensure consistency
       await fetchHabits();
-    } catch (error) {
-      console.error('Error toggling habit:', error);
-      throw error;
+    } catch (err) {
+      console.error('Error toggling habit:', err);
+      setError(err instanceof Error ? err.message : 'Failed to toggle habit');
+      await fetchHabits();
     }
   };
 
-  const updateHabit = async (id: number, name: string) => {
-    if (!user) return;
+  const updateHabit = async (id: number, name: string): Promise<void> => {
+    if (!user || !name.trim()) return;
     
     try {
-      // First verify this habit belongs to the user
-      const { data: habitData, error: habitError } = await supabase
+      const { error } = await supabase
         .from('habits')
-        .select('id')
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .single();
-
-      if (habitError || !habitData) {
-        throw new Error('Unauthorized access to habit');
-      }
-
-      await supabase
-        .from('habits')
-        .update({ name })
+        .update({ name: name.trim() })
         .eq('id', id)
         .eq('user_id', user.id);
 
+      if (error) throw error;
+
+      // Update local state optimistically
+      setHabits(prevHabits =>
+        prevHabits.map(h =>
+          h.id === id ? { ...h, name: name.trim() } : h
+        )
+      );
+    } catch (err) {
+      console.error('Error updating habit:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update habit');
+      // Revert optimistic update on error
       await fetchHabits();
-    } catch (error) {
-      console.error('Error updating habit:', error);
     }
   };
 
-  const deleteHabit = async (id: number) => {
+  const deleteHabit = async (id: number): Promise<void> => {
     if (!user) return;
     
     try {
-      // First verify this habit belongs to the user
-      const { data: habitData, error: habitError } = await supabase
-        .from('habits')
-        .select('id')
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .single();
-
-      if (habitError || !habitData) {
-        throw new Error('Unauthorized access to habit');
-      }
-
-      await supabase
+      const { error } = await supabase
         .from('habits')
         .delete()
         .eq('id', id)
         .eq('user_id', user.id);
 
+      if (error) throw error;
+
+      // Update local state optimistically
+      setHabits(prevHabits => prevHabits.filter(h => h.id !== id));
+    } catch (err) {
+      console.error('Error deleting habit:', err);
+      setError(err instanceof Error ? err.message : 'Failed to delete habit');
+      // Revert optimistic update on error
       await fetchHabits();
-    } catch (error) {
-      console.error('Error deleting habit:', error);
     }
   };
 
   return {
     habits,
+    loading,
+    error,
     fetchHabits,
     addHabit,
     toggleHabit,
