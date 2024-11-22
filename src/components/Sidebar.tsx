@@ -63,10 +63,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) =
         </ul>
       </div>
       <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
-        <div className={`w-full px-6 py-3 rounded-lg ${theme.text} ${theme.habitItem} flex items-center`}>
-          <User className="h-5 w-5 mr-3" />
-          <div className="flex-1 truncate">
-            <span className="font-medium block truncate">{user?.email}</span>
+        <div className={`
+          w-full px-4 py-2 
+          rounded-lg 
+          bg-gray-100 dark:bg-gray-800
+          flex items-center
+          border border-gray-200 dark:border-gray-700
+        `}>
+          <User className="h-5 w-5 mr-3 text-gray-500 dark:text-gray-400" />
+          <div className="flex-1 min-w-0">
+            <span className="font-medium block truncate text-gray-700 dark:text-gray-300 text-sm">
+              {user?.email}
+            </span>
           </div>
         </div>
         <button

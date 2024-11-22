@@ -88,15 +88,6 @@ function HabitTrackerContent() {
 
   const renderHabitsView = () => (
     <div className="flex-1 relative">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] opacity-[0.02] dark:opacity-[0.04]">
-          <Circle className="w-full h-full" />
-        </div>
-        <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] opacity-[0.015] dark:opacity-[0.03]">
-          <Circle className="w-full h-full" />
-        </div>
-      </div>
-
       <div className="max-w-5xl mx-auto relative">
         <div className="md:hidden mb-4">
           <div className={`
@@ -126,6 +117,7 @@ function HabitTrackerContent() {
           ${theme.cardBackground}
           ${theme.border}
           border
+          relative z-10
         `}>
           <form onSubmit={handleAddHabit} className="space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">
             <div className="flex-1 relative">
@@ -168,79 +160,72 @@ function HabitTrackerContent() {
           </form>
         </div>
 
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className={`text-xl font-bold ${theme.text}`}>Your Habits</h2>
-              <p className={`text-sm ${theme.mutedText}`}>Track your weekly progress</p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => changeWeek('prev')}
-                className={`p-2 rounded-lg ${theme.button.icon}`}
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                onClick={goToCurrentWeek}
-                className={`px-4 py-2 rounded-lg ${theme.button.secondary}`}
-              >
-                Today
-              </button>
-              <button
-                onClick={() => changeWeek('next')}
-                className={`p-2 rounded-lg ${theme.button.icon}`}
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
+        <div className="relative z-10">
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className={`text-xl font-bold ${theme.text}`}>Your Habits</h2>
+                <p className={`text-sm ${theme.mutedText}`}>Track your weekly progress</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => changeWeek('prev')}
+                  className={`p-2 rounded-lg ${theme.button.icon}`}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={goToCurrentWeek}
+                  className={`px-4 py-2 rounded-lg ${theme.button.secondary}`}
+                >
+                  Today
+                </button>
+                <button
+                  onClick={() => changeWeek('next')}
+                  className={`p-2 rounded-lg ${theme.button.icon}`}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
-          </div>
-        ) : error ? (
-          <div className="text-red-500 text-center py-4">
-            {error}
-            <button
-              onClick={fetchHabits}
-              className="ml-2 text-blue-500 hover:underline"
-            >
-              Retry
-            </button>
-          </div>
-        ) : (
-          <>
-            <HabitList
-              habits={getSortedHabits()}
-              currentWeek={currentWeek}
-              daysOfWeek={DAYS_OF_WEEK}
-              onToggleHabit={toggleHabit}
-              onUpdateHabit={updateHabit}
-              onDeleteHabit={deleteHabit}
-            />
-            <p className={`text-sm ${theme.mutedText} mt-4`}>
-              Keep up the good work! Consistency is key.
-            </p>
-          </>
-        )}
+          {loading ? (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+            </div>
+          ) : error ? (
+            <div className="text-red-500 text-center py-4">
+              {error}
+              <button
+                onClick={fetchHabits}
+                className="ml-2 text-blue-500 hover:underline"
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
+            <>
+              <HabitList
+                habits={getSortedHabits()}
+                currentWeek={currentWeek}
+                daysOfWeek={DAYS_OF_WEEK}
+                onToggleHabit={toggleHabit}
+                onUpdateHabit={updateHabit}
+                onDeleteHabit={deleteHabit}
+              />
+              <p className={`text-sm ${theme.mutedText} mt-4`}>
+                Keep up the good work! Consistency is key.
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
 
   const renderCalendarView = () => (
     <div className="relative">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-15%] right-[-10%] w-[45%] h-[45%] opacity-[0.02] dark:opacity-[0.04]">
-          <Circle className="w-full h-full" />
-        </div>
-        <div className="absolute bottom-[-25%] left-[-15%] w-[55%] h-[55%] opacity-[0.015] dark:opacity-[0.03]">
-          <Circle className="w-full h-full" />
-        </div>
-      </div>
-
       <Calendar
         currentMonth={currentMonth}
         habits={habits}
@@ -268,15 +253,24 @@ function HabitTrackerContent() {
   }
 
   return (
-    <div className={`min-h-screen ${theme.background}`}>
-      <div className="flex flex-col md:flex-row h-screen">
+    <div className={`min-h-screen ${theme.background} relative overflow-hidden`}>
+      <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
+        <div className="absolute top-[10%] right-[-5%] w-[60%] h-[60%] opacity-[0.02] dark:opacity-[0.04]">
+          <Circle className="w-full h-full" />
+        </div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[70%] h-[70%] opacity-[0.015] dark:opacity-[0.03]">
+          <Circle className="w-full h-full" />
+        </div>
+      </div>
+
+      <div className="flex flex-col md:flex-row h-screen relative" style={{ zIndex: 1 }}>
         <div className="md:hidden">
           <MobileNav activeView={activeView} setActiveView={setActiveView} />
         </div>
         <div className="hidden md:block">
           <Sidebar activeView={activeView} setActiveView={setActiveView} />
         </div>
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto pb-24 md:pb-8 relative">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto pb-24 md:pb-8">
           {activeView === 'habits' && renderHabitsView()}
           {activeView === 'calendar' && renderCalendarView()}
           {activeView === 'settings' && <SettingsView />}
