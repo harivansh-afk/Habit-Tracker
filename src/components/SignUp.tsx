@@ -4,20 +4,63 @@ import { useThemeContext } from '../contexts/ThemeContext';
 import { motion } from 'framer-motion';
 import { Circle } from 'lucide-react';
 
+// Update password validation helper function
+const validatePassword = (password: string) => {
+  const minLength = 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+
+  if (password.length < minLength) {
+    return 'Password must be at least 8 characters long';
+  }
+  if (!hasUpperCase) {
+    return 'Password must contain at least one uppercase letter';
+  }
+  if (!hasLowerCase) {
+    return 'Password must contain at least one lowercase letter';
+  }
+  if (!hasNumbers) {
+    return 'Password must contain at least one number';
+  }
+  return null;
+};
+
 export function SignUp({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const { signUp } = useAuth();
   const { theme } = useThemeContext();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate password before submission
+    const passwordValidationError = validatePassword(password);
+    if (passwordValidationError) {
+      setPasswordError(passwordValidationError);
+      return;
+    }
+
     try {
       setError('');
+      setPasswordError(null);
       await signUp(email, password);
-    } catch {
+    } catch (err) {
       setError('Failed to create an account');
+    }
+  };
+
+  // Add password validation on change
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    if (newPassword) {
+      setPasswordError(validatePassword(newPassword));
+    } else {
+      setPasswordError(null);
     }
   };
 
@@ -115,12 +158,27 @@ export function SignUp({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={handlePasswordChange}
                   placeholder="Password"
                   className={`w-full px-4 py-3 rounded-xl ${theme.input} transition-all duration-200 
-                    focus:ring-2 focus:ring-black dark:focus:ring-white border-gray-200 dark:border-gray-700`}
+                    focus:ring-2 focus:ring-black dark:focus:ring-white 
+                    ${passwordError ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'}`}
                   required
                 />
+                {passwordError && (
+                  <p className="mt-2 text-sm text-red-500 dark:text-red-400">
+                    {passwordError}
+                  </p>
+                )}
+                <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  Password must contain:
+                  <ul className="list-disc list-inside mt-1 space-y-1">
+                    <li>At least 8 characters</li>
+                    <li>One uppercase letter</li>
+                    <li>One lowercase letter</li>
+                    <li>One number</li>
+                  </ul>
+                </div>
               </div>
               <button
                 type="submit"
