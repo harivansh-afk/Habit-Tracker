@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Sun, Moon, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sun, Moon, Plus, Circle } from 'lucide-react';
 import { HabitList } from './components/HabitList';
 import { Calendar } from './components/Calendar';
 import { Sidebar } from './components/Sidebar';
@@ -87,8 +87,17 @@ function HabitTrackerContent() {
   };
 
   const renderHabitsView = () => (
-    <div className="flex-1">
-      <div className="max-w-5xl mx-auto">
+    <div className="flex-1 relative">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] opacity-[0.02] dark:opacity-[0.04]">
+          <Circle className="w-full h-full" />
+        </div>
+        <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] opacity-[0.015] dark:opacity-[0.03]">
+          <Circle className="w-full h-full" />
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto relative">
         <div className={`
           mb-8 p-4 md:p-6 
           rounded-lg shadow-md
@@ -200,17 +209,28 @@ function HabitTrackerContent() {
   );
 
   const renderCalendarView = () => (
-    <Calendar
-      currentMonth={currentMonth}
-      habits={habits}
-      onChangeMonth={changeMonth}
-      getDaysInMonth={(year, month) => new Date(year, month + 1, 0).getDate()}
-      getCompletedHabitsForDate={getCompletedHabitsForDate}
-      onToggleHabit={async (habitId, date) => {
-        await toggleHabit(habitId, date);
-        await fetchHabits();
-      }}
-    />
+    <div className="relative">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-15%] right-[-10%] w-[45%] h-[45%] opacity-[0.02] dark:opacity-[0.04]">
+          <Circle className="w-full h-full" />
+        </div>
+        <div className="absolute bottom-[-25%] left-[-15%] w-[55%] h-[55%] opacity-[0.015] dark:opacity-[0.03]">
+          <Circle className="w-full h-full" />
+        </div>
+      </div>
+
+      <Calendar
+        currentMonth={currentMonth}
+        habits={habits}
+        onChangeMonth={changeMonth}
+        getDaysInMonth={(year, month) => new Date(year, month + 1, 0).getDate()}
+        getCompletedHabitsForDate={getCompletedHabitsForDate}
+        onToggleHabit={async (habitId, date) => {
+          await toggleHabit(habitId, date);
+          await fetchHabits();
+        }}
+      />
+    </div>
   );
 
   if (loading) {
@@ -234,7 +254,7 @@ function HabitTrackerContent() {
         <div className="hidden md:block">
           <Sidebar activeView={activeView} setActiveView={setActiveView} />
         </div>
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto pb-24 md:pb-8">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto pb-24 md:pb-8 relative">
           {activeView === 'habits' && renderHabitsView()}
           {activeView === 'calendar' && renderCalendarView()}
           {activeView === 'settings' && <SettingsView />}

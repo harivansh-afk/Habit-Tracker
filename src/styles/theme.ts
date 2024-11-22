@@ -1,8 +1,8 @@
 export const lightTheme = {
   // Background colors
-  background: 'bg-[#ffffff]',
-  cardBackground: 'bg-[#ffffff]',
-  sidebarBackground: 'bg-[#fbfbfa]',
+  background: 'bg-[#fafafa]',
+  cardBackground: 'bg-white/80 backdrop-blur-[2px]',
+  sidebarBackground: 'bg-white/90 backdrop-blur-[2px]',
   
   // Text colors
   text: 'text-[#37352f]',
@@ -31,11 +31,11 @@ export const lightTheme = {
   
   // Calendar specific (expanded)
   calendar: {
-    background: 'bg-[#ffffff]',
+    background: 'bg-white/80 backdrop-blur-[2px]',
     header: 'text-[#37352f]',
     weekDay: 'text-[#787774]',
     day: {
-      default: 'bg-[#ffffff] hover:bg-[#f1f1ef] text-[#37352f] shadow-sm',
+      default: 'bg-white/90 hover:bg-[#f1f1ef] text-[#37352f] shadow-sm',
       selected: 'bg-[#37352f] text-white',
       today: 'ring-1 ring-inset ring-black/5 dark:ring-white/5',
       otherMonth: 'text-[#787774] bg-[#fafafa]'
@@ -45,7 +45,7 @@ export const lightTheme = {
       icon: 'h-5 w-5 text-[#37352f]'
     },
     tooltip: {
-      background: 'bg-[#ffffff]',
+      background: 'bg-white/95 backdrop-blur-[4px]',
       border: 'border-[#e9e9e8]',
       shadow: 'shadow-lg shadow-[#00000008]'
     }
@@ -61,60 +61,60 @@ export const lightTheme = {
 export const darkTheme = {
   // Background colors
   background: 'bg-[#191919]',
-  cardBackground: 'bg-[#2f2f2f]',
-  sidebarBackground: 'bg-[#191919]',
+  cardBackground: 'bg-[#232323]/80 backdrop-blur-[2px]',
+  sidebarBackground: 'bg-[#1d1d1d]/90 backdrop-blur-[2px]',
   
   // Text colors
-  text: 'text-[#ffffff]',
+  text: 'text-[#e6e6e6]',
   mutedText: 'text-[#999999]',
   
   // Border colors
-  border: 'border-[#393939]',
+  border: 'border-[#2a2a2a]',
   
   // Interactive elements
   button: {
-    primary: 'bg-[#ffffff] text-[#191919] hover:bg-[#e6e6e6]',
-    secondary: 'bg-[#363636] text-[#ffffff] hover:bg-[#424242]',
-    icon: 'hover:bg-[#363636] text-[#ffffff]'
+    primary: 'bg-[#e6e6e6] text-[#191919] hover:bg-[#d1d1d1]',
+    secondary: 'bg-[#2a2a2a] text-[#e6e6e6] hover:bg-[#333333]',
+    icon: 'hover:bg-[#2a2a2a] text-[#e6e6e6]'
   },
   
   // Input elements
-  input: 'bg-[#2f2f2f] border-[#393939] focus:border-[#525252] text-[#ffffff]',
+  input: 'bg-[#232323] border-[#2a2a2a] focus:border-[#404040] text-[#e6e6e6]',
   
   // Calendar specific
-  calendarDay: 'bg-[#2f2f2f] hover:bg-[#363636]',
-  calendarDaySelected: 'bg-[#ffffff] text-[#191919]',
+  calendarDay: 'bg-[#232323] hover:bg-[#2a2a2a]',
+  calendarDaySelected: 'bg-[#e6e6e6] text-[#191919]',
   
   // Habit list specific
-  habitItem: 'hover:bg-[#363636]',
-  habitCheckbox: 'border-[#393939] text-[#ffffff]',
+  habitItem: 'hover:bg-[#2a2a2a]',
+  habitCheckbox: 'border-[#2a2a2a] text-[#e6e6e6]',
   
   // Calendar specific (expanded)
   calendar: {
-    background: 'bg-[#191919]',
-    header: 'text-[#ffffff]',
+    background: 'bg-[#232323]/90 backdrop-blur-[2px]',
+    header: 'text-[#e6e6e6]',
     weekDay: 'text-[#999999]',
     day: {
-      default: 'bg-[#2f2f2f] hover:bg-[#363636] text-[#ffffff] shadow-md shadow-[#00000030]',
-      selected: 'bg-[#ffffff] text-[#191919]',
+      default: 'bg-[#232323]/90 hover:bg-[#2a2a2a] text-[#e6e6e6] shadow-sm shadow-[#00000015]',
+      selected: 'bg-[#e6e6e6] text-[#191919]',
       today: 'ring-1 ring-inset ring-white/10',
-      otherMonth: 'text-[#666666] bg-[#242424]'
+      otherMonth: 'text-[#666666] bg-[#1f1f1f]'
     },
     navigation: {
-      button: 'hover:bg-[#363636] text-[#ffffff]',
-      icon: 'h-5 w-5 text-[#ffffff]'
+      button: 'hover:bg-[#2a2a2a] text-[#e6e6e6]',
+      icon: 'h-5 w-5 text-[#e6e6e6]'
     },
     tooltip: {
-      background: 'bg-[#2f2f2f]',
-      border: 'border-[#393939]',
-      shadow: 'shadow-lg shadow-[#00000050]'
+      background: 'bg-[#232323]/95 backdrop-blur-[4px]',
+      border: 'border-[#2a2a2a]',
+      shadow: 'shadow-lg shadow-[#00000030]'
     }
   },
   
   // Navigation
   nav: {
-    active: 'bg-[#363636]/80 text-white shadow-inner',
-    inactive: 'text-white/70 hover:bg-[#363636]/50'
+    active: 'bg-[#2a2a2a]/80 text-[#e6e6e6] shadow-inner',
+    inactive: 'text-[#e6e6e6]/80 hover:bg-[#2a2a2a]/50'
   }
 };
 
