@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, CalendarIcon, SettingsIcon, LogOut, User } from 'lucide-react';
+import { Plus, CalendarIcon, SettingsIcon, LogOut } from 'lucide-react';
 import { useThemeContext } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -12,21 +12,22 @@ interface MobileNavProps {
 
 export const MobileNav: React.FC<MobileNavProps> = ({ activeView, setActiveView }) => {
   const { theme } = useThemeContext();
-  const { signOut, user } = useAuth();
+  const { signOut } = useAuth();
 
   return (
     <>
-      {/* Spacer to prevent content from being hidden behind the nav */}
-      <div className="h-20 md:hidden" />
+      <div className="h-24 md:hidden" />
       
       <nav className={`
-        fixed bottom-4 left-4 right-4 md:hidden
+        fixed bottom-0 left-0 right-0 md:hidden
         ${theme.cardBackground} 
-        rounded-2xl shadow-lg backdrop-blur-lg
-        border ${theme.border}
+        rounded-t-2xl shadow-lg backdrop-blur-lg
+        border-t ${theme.border}
         z-50
+        safe-bottom
+        pb-safe
       `}>
-        <div className="flex justify-around items-center p-2">
+        <div className="flex justify-around items-center p-4">
           <NavButton
             active={activeView === 'habits'}
             onClick={() => setActiveView('habits')}
@@ -44,11 +45,6 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeView, setActiveView 
             onClick={() => setActiveView('settings')}
             icon={<SettingsIcon className="h-5 w-5" />}
             label="Settings"
-          />
-          <NavButton
-            icon={<User className="h-5 w-5" />}
-            label={user?.email?.split('@')[0] ?? 'Account'}
-            tooltip={user?.email}
           />
           <NavButton
             onClick={signOut}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Sun, Moon, Plus, Circle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sun, Moon, Plus, Circle, User } from 'lucide-react';
 import { HabitList } from './components/HabitList';
 import { Calendar } from './components/Calendar';
 import { Sidebar } from './components/Sidebar';
@@ -98,6 +98,28 @@ function HabitTrackerContent() {
       </div>
 
       <div className="max-w-5xl mx-auto relative">
+        <div className="md:hidden mb-4">
+          <div className={`
+            p-4 rounded-lg
+            ${theme.cardBackground}
+            ${theme.border}
+            border
+            flex items-center gap-3
+          `}>
+            <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+              <User className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className={`text-sm font-medium ${theme.text} truncate`}>
+                {user?.email}
+              </div>
+              <div className={`text-xs ${theme.mutedText}`}>
+                Logged in
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className={`
           mb-8 p-4 md:p-6 
           rounded-lg shadow-md
