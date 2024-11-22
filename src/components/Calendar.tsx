@@ -303,52 +303,52 @@ export const Calendar: React.FC<CalendarProps> = ({
             top: tooltipData.y - 8,
             transform: 'translate(-50%, -100%)',
             pointerEvents: tooltipData.isVisible ? 'auto' : 'none',
+            zIndex: 100,
           }}
         >
           <div 
             className={`
-              rounded-lg p-4 
-              w-[200px]
-              ${theme.calendar.tooltip.background}
-              ${theme.calendar.tooltip.border}
-              shadow-[0_10px_38px_-10px_rgba(22,23,24,0.35),0_10px_20px_-15px_rgba(22,23,24,0.2)]
+              rounded-2xl p-5
+              w-[240px]
+              bg-white dark:bg-[#232323]
               border
-              backdrop-blur-sm
+              ${theme.border}
+              shadow-lg
               relative
               transition-all duration-150 ease-in-out
               scale-100 origin-[bottom]
               ${tooltipData.isVisible ? 'scale-100' : 'scale-98'}
             `}
           >
-            {/* Arrow */}
+            {/* Updated Arrow */}
             <div 
               className={`
-                absolute -bottom-2 left-1/2 -translate-x-1/2
-                w-4 h-4 rotate-45
-                ${theme.calendar.tooltip.background}
-                ${theme.calendar.tooltip.border}
+                absolute -bottom-[6px] left-1/2 -translate-x-1/2
+                w-3 h-3 rotate-45
+                bg-white dark:bg-[#232323]
+                ${theme.border}
                 border-t-0 border-l-0
               `}
             />
             
             <div className="relative">
               {tooltipData.completedHabits.length > 0 && (
-                <div className="mb-3">
-                  <span className="text-[#2ecc71] font-semibold block mb-2">
+                <div className="mb-4">
+                  <span className="text-emerald-500 dark:text-emerald-400 font-medium block mb-2.5 text-sm">
                     ✓ Completed
                   </span>
-                  <ul className="space-y-1.5">
+                  <ul className="space-y-2">
                     {tooltipData.completedHabits.map(habit => (
                       <li 
                         key={habit.id} 
-                        className={`${theme.text} text-sm truncate flex items-center justify-between`}
+                        className={`${theme.text} text-sm truncate flex items-center justify-between group`}
                       >
-                        <span>{habit.name}</span>
+                        <span className="truncate mr-2">{habit.name}</span>
                         <button
                           onClick={(e) => handleToggleHabit(e, habit.id, tooltipData.date)}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                          className={`p-1.5 rounded-lg transition-colors ${theme.habitItem}`}
                         >
-                          <Check className="h-4 w-4 text-[#2ecc71]" />
+                          <Check className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
                         </button>
                       </li>
                     ))}
@@ -357,21 +357,21 @@ export const Calendar: React.FC<CalendarProps> = ({
               )}
               {tooltipData.incompleteHabits.length > 0 && (
                 <div>
-                  <span className="text-[#e74c3c] font-semibold block mb-2">
+                  <span className="text-rose-500 dark:text-rose-400 font-medium block mb-2.5 text-sm">
                     ○ Pending
                   </span>
-                  <ul className="space-y-1.5">
+                  <ul className="space-y-2">
                     {tooltipData.incompleteHabits.map(habit => (
                       <li 
                         key={habit.id} 
                         className={`${theme.text} text-sm truncate flex items-center justify-between group`}
                       >
-                        <span>{habit.name}</span>
+                        <span className="truncate mr-2">{habit.name}</span>
                         <button
                           onClick={(e) => handleToggleHabit(e, habit.id, tooltipData.date)}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                          className={`p-1.5 rounded-lg transition-colors opacity-0 group-hover:opacity-100 ${theme.habitItem}`}
                         >
-                          <Check className="h-4 w-4 text-gray-400 hover:text-[#2ecc71]" />
+                          <Check className="h-4 w-4 text-gray-400 dark:text-gray-500 hover:text-emerald-500 dark:hover:text-emerald-400" />
                         </button>
                       </li>
                     ))}
