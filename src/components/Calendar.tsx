@@ -13,6 +13,22 @@ interface CalendarProps {
   onToggleHabit: (habitId: number, date: string) => void;
 }
 
+// Add this utility function at the top of the file
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return isMobile;
+};
+
 export const Calendar: React.FC<CalendarProps> = ({
   currentMonth,
   habits,
@@ -22,6 +38,7 @@ export const Calendar: React.FC<CalendarProps> = ({
   onToggleHabit
 }) => {
   const { theme } = useThemeContext();
+  const isMobile = useIsMobile();
   
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -103,9 +120,17 @@ export const Calendar: React.FC<CalendarProps> = ({
 
   return (
     <>
-      <div className={`rounded-lg shadow-md p-6 ${theme.calendar.background}`}>
-        <div className="flex justify-between items-center mb-8">
-          <h2 className={`text-2xl font-bold ${theme.calendar.header}`}>
+      <div className={`
+        rounded-lg shadow-md p-6 md:p-6 
+        ${theme.calendar.background}
+        ${isMobile ? 'p-2 mx-[-1rem]' : ''}
+      `}>
+        <div className="flex justify-between items-center mb-4 md:mb-8">
+          <h2 className={`
+            ${theme.calendar.header}
+            ${isMobile ? 'text-lg' : 'text-2xl'}
+            font-bold
+          `}>
             {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
           </h2>
           <div className="flex space-x-3">
@@ -124,10 +149,14 @@ export const Calendar: React.FC<CalendarProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-4">
+        <div className="grid grid-cols-7 gap-1 md:gap-4">
           {daysOfWeek.map(day => (
-            <div key={day} className={`text-center font-semibold mb-2 ${theme.calendar.weekDay}`}>
-              {day}
+            <div key={day} className={`
+              text-center font-semibold mb-1 md:mb-2 
+              ${theme.calendar.weekDay}
+              ${isMobile ? 'text-xs' : ''}
+            `}>
+              {isMobile ? day.charAt(0) : day}
             </div>
           ))}
           
@@ -181,51 +210,70 @@ export const Calendar: React.FC<CalendarProps> = ({
                 <div
                   key={date}
                   className={`
-                    border rounded-lg p-3 min-h-[80px] relative
+                    border rounded-lg relative
                     ${theme.border}
                     ${isCurrentMonth ? theme.calendar.day.default : theme.calendar.day.otherMonth}
                     ${isToday ? theme.calendar.day.today : ''}
+                    ${isMobile ? 'p-1 min-h-[60px]' : 'p-3 min-h-[80px]'}
                   `}
                 >
                   <span className={`
                     font-medium 
                     ${isCurrentMonth ? theme.text : theme.calendar.day.otherMonth}
                     ${isToday ? 'relative' : ''}
+                    ${isMobile ? 'text-sm' : ''}
                   `}>
                     {dayNumber}
                   </span>
                   {habits.length > 0 && (
-                    <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2">
+                    <div className={`
+                      absolute bottom-1 left-1/2 transform -translate-x-1/2
+                      ${isMobile ? 'w-full px-1' : ''}
+                    `}>
                       <div 
                         className="relative"
-                        onMouseEnter={(e) => showTooltip(e, date, completedHabits, incompleteHabits)}
-                        onMouseLeave={hideTooltip}
+                        {...(!isMobile ? {
+                          onMouseEnter: (e) => showTooltip(e, date, completedHabits, incompleteHabits),
+                          onMouseLeave: hideTooltip
+                        } : {})}
                       >
-                        <div className="flex items-center gap-1.5">
-                          {isToday && (
-                            <div className="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400" />
-                          )}
-                          <div 
-                            className={`
+                        {isMobile ? (
+                          <div className="flex flex-col items-center">
+                            <div className={`
+                              text-xs font-medium px-1.5 py-0.5 rounded
+                              ${completedHabits.length > 0 
+                                ? 'text-green-700 dark:text-green-300' 
+                                : `${theme.text} opacity-75`
+                              }
+                            `}>
+                              {completedHabits.length}/{habits.length}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            {isToday && (
+                              <div className="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400" />
+                            )}
+                            <div className={`
                               h-6 px-2.5 rounded-full cursor-pointer
                               transition-all duration-200 flex items-center justify-center gap-1
                               ${completedHabits.length > 0 
                                 ? 'bg-green-100 dark:bg-green-900/30 shadow-[0_2px_10px] shadow-green-900/20 dark:shadow-green-100/20' 
                                 : `bg-gray-100 dark:bg-gray-800 shadow-sm`
                               }
-                            `}
-                          >
-                            <span className={`
-                              text-xs font-medium
-                              ${completedHabits.length > 0 
-                                ? 'text-green-700 dark:text-green-300' 
-                                : 'text-gray-600 dark:text-gray-400'
-                              }
                             `}>
-                              {completedHabits.length}/{habits.length}
-                            </span>
+                              <span className={`
+                                text-xs font-medium
+                                ${completedHabits.length > 0 
+                                  ? 'text-green-700 dark:text-green-300' 
+                                  : 'text-gray-600 dark:text-gray-400'
+                                }
+                              `}>
+                                {completedHabits.length}/{habits.length}
+                              </span>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -236,8 +284,8 @@ export const Calendar: React.FC<CalendarProps> = ({
         </div>
       </div>
 
-      {/* Updated tooltip portal with more subtle animations */}
-      {tooltipData && createPortal(
+      {/* Tooltip portal - only render on desktop */}
+      {!isMobile && tooltipData && createPortal(
         <div
           ref={tooltipRef}
           onMouseEnter={cancelHideTooltip}
