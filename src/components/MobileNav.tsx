@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, CalendarIcon, SettingsIcon, LogOut } from 'lucide-react';
+import { Plus, CalendarIcon, SettingsIcon, LogOut, User } from 'lucide-react';
 import { useThemeContext } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -12,7 +12,7 @@ interface MobileNavProps {
 
 export const MobileNav: React.FC<MobileNavProps> = ({ activeView, setActiveView }) => {
   const { theme } = useThemeContext();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
 
   return (
     <>
@@ -46,6 +46,11 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeView, setActiveView 
             label="Settings"
           />
           <NavButton
+            icon={<User className="h-5 w-5" />}
+            label={user?.email?.split('@')[0] ?? 'Account'}
+            tooltip={user?.email}
+          />
+          <NavButton
             onClick={signOut}
             icon={<LogOut className="h-5 w-5" />}
             label="Sign Out"
@@ -59,10 +64,11 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeView, setActiveView 
 
 interface NavButtonProps {
   active?: boolean;
-  onClick: () => void;
+  onClick?: () => void;
   icon: React.ReactNode;
   label: string;
   variant?: 'default' | 'danger';
+  tooltip?: string;
 }
 
 const NavButton: React.FC<NavButtonProps> = ({ 
@@ -70,7 +76,8 @@ const NavButton: React.FC<NavButtonProps> = ({
   onClick, 
   icon, 
   label,
-  variant = 'default'
+  variant = 'default',
+  tooltip
 }) => {
   const { theme } = useThemeContext();
   
@@ -85,8 +92,9 @@ const NavButton: React.FC<NavButtonProps> = ({
       className={`
         ${baseStyles}
         ${variantStyles}
-        ${active ? 'scale-95 shadow-inner' : 'hover:scale-105'}
+        ${active ? 'scale-95 shadow-inner' : onClick ? 'hover:scale-105' : ''}
       `}
+      title={tooltip}
     >
       <div className={`
         ${active ? 'scale-95' : ''}
@@ -95,7 +103,7 @@ const NavButton: React.FC<NavButtonProps> = ({
         {icon}
       </div>
       <span className={`
-        text-xs mt-1 font-medium
+        text-xs mt-1 font-medium truncate max-w-[60px]
         ${active ? 'opacity-100' : 'opacity-70'}
       `}>
         {label}

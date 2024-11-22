@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, CalendarIcon, SettingsIcon, LogOut } from 'lucide-react';
+import { Plus, CalendarIcon, SettingsIcon, LogOut, User } from 'lucide-react';
 import { useThemeContext } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -12,7 +12,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
   const { theme } = useThemeContext();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   
   return (
     <nav className={`w-72 h-screen sticky top-0 border-r ${theme.border} ${theme.sidebarBackground} flex flex-col`}>
@@ -62,7 +62,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) =
           </li>
         </ul>
       </div>
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+        <div className={`w-full px-6 py-3 rounded-lg ${theme.text} ${theme.habitItem} flex items-center`}>
+          <User className="h-5 w-5 mr-3" />
+          <div className="flex-1 truncate">
+            <span className="font-medium block truncate">{user?.email}</span>
+          </div>
+        </div>
         <button
           onClick={signOut}
           className={`w-full px-6 py-3 text-left rounded-lg transition-all duration-200 flex items-center
