@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Sun, Moon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sun, Moon, Plus } from 'lucide-react';
 import { HabitList } from './components/HabitList';
 import { Calendar } from './components/Calendar';
 import { Sidebar } from './components/Sidebar';
@@ -89,21 +89,50 @@ function HabitTrackerContent() {
   const renderHabitsView = () => (
     <div className="flex-1">
       <div className="max-w-5xl mx-auto">
-        <div className="mb-8">
-          <form onSubmit={handleAddHabit} className="flex items-center gap-4">
-            <input
-              type="text"
-              value={newHabit}
-              onChange={(e) => setNewHabit(e.target.value)}
-              placeholder="Add a new habit"
-              className={`flex-1 px-4 py-2 rounded-lg ${theme.input}`}
-            />
+        <div className={`
+          mb-8 p-4 md:p-6 
+          rounded-lg shadow-md
+          ${theme.cardBackground}
+          ${theme.border}
+          border
+        `}>
+          <form onSubmit={handleAddHabit} className="space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">
+            <div className="flex-1 relative">
+              <Plus className={`
+                absolute left-4 top-1/2 transform -translate-y-1/2 
+                h-5 w-5 
+                ${theme.text} opacity-50
+              `} />
+              <input
+                type="text"
+                value={newHabit}
+                onChange={(e) => setNewHabit(e.target.value)}
+                placeholder="Add a new habit"
+                className={`
+                  w-full px-12 py-3 
+                  rounded-lg
+                  transition-all duration-200
+                  ${theme.input}
+                  focus:ring-2 focus:ring-blue-500/20 focus:outline-none
+                  placeholder:opacity-50
+                `}
+              />
+            </div>
             <button
               type="submit"
               disabled={!newHabit.trim()}
-              className={`px-4 py-2 rounded-lg ${theme.button.primary} disabled:opacity-50`}
+              className={`
+                w-full md:w-auto
+                px-6 py-3 
+                rounded-lg
+                transition-all duration-200
+                flex items-center justify-center gap-2
+                ${theme.button.primary} 
+                disabled:opacity-50
+                ${newHabit.trim() ? 'hover:translate-x-1' : ''}
+              `}
             >
-              Add Habit
+              <span className="font-medium">Add Habit</span>
             </button>
           </form>
         </div>
