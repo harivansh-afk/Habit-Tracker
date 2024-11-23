@@ -159,13 +159,17 @@ export const Calendar: React.FC<CalendarProps> = ({
     });
   };
 
-  // Update where dates are displayed
+  // Update the formatDisplayDate function to handle UTC dates correctly
   const formatDisplayDate = (dateStr: string) => {
-    const date = new Date(dateStr + 'T00:00:00.000Z');
+    // Create a UTC date from the ISO string
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+
     return date.toLocaleDateString('default', {
       month: 'long',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
+      timeZone: 'UTC' // Ensure we use UTC timezone
     });
   };
 
