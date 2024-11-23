@@ -139,7 +139,6 @@ export const useHabits = () => {
       const isCompleted = habit.completedDates.includes(date);
 
       if (isCompleted) {
-        // Remove completion
         const { error } = await supabase
           .from('habit_completions')
           .delete()
@@ -149,7 +148,6 @@ export const useHabits = () => {
 
         if (error) throw error;
       } else {
-        // Add completion
         const { error } = await supabase
           .from('habit_completions')
           .insert({
@@ -177,7 +175,6 @@ export const useHabits = () => {
     } catch (err) {
       console.error('Error toggling habit:', err);
       setError(err instanceof Error ? err.message : 'Failed to toggle habit');
-      // Refresh habits to ensure consistency
       await fetchHabits();
     }
   };

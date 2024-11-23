@@ -145,7 +145,9 @@ export const Calendar: React.FC<CalendarProps> = ({
     e.stopPropagation();
     await onToggleHabit(habitId, date);
 
-    // Update the selected date data immediately after toggling
+    // Ensure we're using the correct date for the selected date display
+    const selectedUTCDate = new Date(date + 'T00:00:00.000Z');
+
     setSelectedDate({
       date,
       completedHabits: getCompletedHabitsForDate(date),
@@ -154,6 +156,16 @@ export const Calendar: React.FC<CalendarProps> = ({
           .map(h => h.id)
           .includes(habit.id)
       )
+    });
+  };
+
+  // Update where dates are displayed
+  const formatDisplayDate = (dateStr: string) => {
+    const date = new Date(dateStr + 'T00:00:00.000Z');
+    return date.toLocaleDateString('default', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
     });
   };
 
@@ -342,11 +354,7 @@ export const Calendar: React.FC<CalendarProps> = ({
         `}>
           <div className="mb-4">
             <h3 className={`text-lg font-medium ${theme.text}`}>
-              {new Date(selectedDate.date).toLocaleDateString('default', {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-              })}
+              {formatDisplayDate(selectedDate.date)}
             </h3>
           </div>
 

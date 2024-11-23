@@ -32,7 +32,7 @@ export function HabitList({
   }, [habits, habitSort]);
 
   const getDayName = (dateStr: string) => {
-    const date = new Date(dateStr);
+    const date = new Date(dateStr + 'T00:00:00.000Z');
     return daysOfWeek[getDayIndex(date)];
   };
 
@@ -47,7 +47,7 @@ export function HabitList({
                 <div className="hidden md:block">{getDayName(dateStr)}</div>
                 <div className="md:hidden">{getDayName(dateStr).slice(0, 1)}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {new Date(dateStr).getDate()}
+                  {new Date(dateStr + 'T00:00:00.000Z').getUTCDate()}
                 </div>
               </th>
             ))}
