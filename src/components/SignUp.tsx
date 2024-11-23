@@ -36,7 +36,7 @@ export function SignUp({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate password before submission
     const passwordValidationError = validatePassword(password);
     if (passwordValidationError) {
@@ -48,8 +48,12 @@ export function SignUp({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
       setError('');
       setPasswordError(null);
       await signUp(email, password);
-    } catch (err) {
-      setError('Failed to create an account');
+    } catch (err: unknown) {
+      // Handle the error message
+      const errorMessage = err instanceof Error
+        ? err.message
+        : 'Failed to create an account';
+      setError(errorMessage);
     }
   };
 
@@ -68,16 +72,16 @@ export function SignUp({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
     <div className="min-h-screen w-full flex">
       <div className="hidden md:flex md:w-1/2 bg-black p-12 flex-col justify-center relative overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center opacity-20">
-          <motion.div 
+          <motion.div
             className="absolute w-96 h-96"
-            animate={{ 
+            animate={{
               rotate: 360,
               scale: [1, 1.2, 1],
             }}
-            transition={{ 
+            transition={{
               duration: 15,
               repeat: Infinity,
-              ease: "linear" 
+              ease: "linear"
             }}
           >
             <Circle className="w-full h-full text-white" />
@@ -103,30 +107,30 @@ export function SignUp({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
         </div>
 
         <div className="absolute inset-0 md:hidden overflow-hidden">
-          <motion.div 
+          <motion.div
             className="absolute top-[-30%] right-[-20%] w-[80%] h-[80%] opacity-[0.07]"
-            animate={{ 
+            animate={{
               rotate: 360,
               scale: [1, 1.1, 1],
             }}
-            transition={{ 
+            transition={{
               duration: 12,
               repeat: Infinity,
-              ease: "linear" 
+              ease: "linear"
             }}
           >
             <Circle className="w-full h-full" />
           </motion.div>
-          <motion.div 
+          <motion.div
             className="absolute bottom-[-40%] left-[-30%] w-[90%] h-[90%] opacity-[0.05]"
-            animate={{ 
+            animate={{
               rotate: -360,
               scale: [1, 1.2, 1],
             }}
-            transition={{ 
+            transition={{
               duration: 15,
               repeat: Infinity,
-              ease: "linear" 
+              ease: "linear"
             }}
           >
             <Circle className="w-full h-full" />
@@ -134,7 +138,7 @@ export function SignUp({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
         </div>
 
         <div className="w-full max-w-md relative mt-24 md:mt-0">
-          <div className={`w-full p-6 md:p-8 rounded-2xl backdrop-blur-sm ${theme.cardBackground} relative z-10 
+          <div className={`w-full p-6 md:p-8 rounded-2xl backdrop-blur-sm ${theme.cardBackground} relative z-10
             border border-gray-100 dark:border-gray-800 shadow-xl`}>
             <h2 className={`text-2xl font-bold mb-6 ${theme.text} md:block hidden`}>Sign Up</h2>
             {error && (
@@ -149,7 +153,7 @@ export function SignUp({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email"
-                  className={`w-full px-4 py-3 rounded-xl ${theme.input} transition-all duration-200 
+                  className={`w-full px-4 py-3 rounded-xl ${theme.input} transition-all duration-200
                     focus:ring-2 focus:ring-black dark:focus:ring-white border-gray-200 dark:border-gray-700`}
                   required
                 />
@@ -160,8 +164,8 @@ export function SignUp({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
                   value={password}
                   onChange={handlePasswordChange}
                   placeholder="Password"
-                  className={`w-full px-4 py-3 rounded-xl ${theme.input} transition-all duration-200 
-                    focus:ring-2 focus:ring-black dark:focus:ring-white 
+                  className={`w-full px-4 py-3 rounded-xl ${theme.input} transition-all duration-200
+                    focus:ring-2 focus:ring-black dark:focus:ring-white
                     ${passwordError ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'}`}
                   required
                 />
@@ -182,7 +186,7 @@ export function SignUp({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
               </div>
               <button
                 type="submit"
-                className={`w-full py-3 rounded-xl bg-black text-white hover:bg-gray-800 
+                className={`w-full py-3 rounded-xl bg-black text-white hover:bg-gray-800
                   transition-all duration-200 shadow-lg hover:shadow-xl`}
               >
                 Create Account
@@ -202,4 +206,4 @@ export function SignUp({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
       </div>
     </div>
   );
-} 
+}

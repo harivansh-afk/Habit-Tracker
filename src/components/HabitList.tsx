@@ -60,7 +60,7 @@ export function HabitList({
         <tbody>
           {sortedHabits.map((habit) => {
             const { currentStreak } = calculateStreak(habit.completedDates);
-            
+
             return (
               <tr key={habit.id} className="border-t dark:border-gray-700">
                 <td className="px-4 py-2 dark:text-white">

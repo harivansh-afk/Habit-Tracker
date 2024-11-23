@@ -39,7 +39,7 @@ export const Calendar: React.FC<CalendarProps> = ({
 }) => {
   const { theme } = useThemeContext();
   const isMobile = useIsMobile();
-  
+
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   const getFirstDayOfMonth = (year: number, month: number) => {
@@ -81,7 +81,7 @@ export const Calendar: React.FC<CalendarProps> = ({
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
     }
-    
+
     const rect = e.currentTarget.getBoundingClientRect();
     setTooltipData({
       x: rect.left + rect.width / 2,
@@ -118,10 +118,49 @@ export const Calendar: React.FC<CalendarProps> = ({
     };
   }, []);
 
+  // Update selected date data when habits change
+  const [selectedDate, setSelectedDate] = React.useState<{
+    date: string;
+    completedHabits: Habit[];
+    incompleteHabits: Habit[];
+  } | null>(null);
+
+  // Update the selected date data whenever habits change or a habit is toggled
+  React.useEffect(() => {
+    if (selectedDate) {
+      setSelectedDate({
+        date: selectedDate.date,
+        completedHabits: getCompletedHabitsForDate(selectedDate.date),
+        incompleteHabits: habits.filter(habit =>
+          !getCompletedHabitsForDate(selectedDate.date)
+            .map(h => h.id)
+            .includes(habit.id)
+        )
+      });
+    }
+  }, [habits, getCompletedHabitsForDate]);
+
+  // Modified habit toggle handler for mobile view
+  const handleMobileHabitToggle = async (e: React.MouseEvent, habitId: number, date: string) => {
+    e.stopPropagation();
+    await onToggleHabit(habitId, date);
+
+    // Update the selected date data immediately after toggling
+    setSelectedDate({
+      date,
+      completedHabits: getCompletedHabitsForDate(date),
+      incompleteHabits: habits.filter(habit =>
+        !getCompletedHabitsForDate(date)
+          .map(h => h.id)
+          .includes(habit.id)
+      )
+    });
+  };
+
   return (
     <>
       <div className={`
-        rounded-lg shadow-md p-6 md:p-6 
+        rounded-lg shadow-md p-6 md:p-6
         ${theme.calendar.background}
         ${isMobile ? 'p-2 mx-[-1rem]' : ''}
       `}>
@@ -152,21 +191,21 @@ export const Calendar: React.FC<CalendarProps> = ({
         <div className="grid grid-cols-7 gap-1 md:gap-4">
           {daysOfWeek.map(day => (
             <div key={day} className={`
-              text-center font-semibold mb-1 md:mb-2 
+              text-center font-semibold mb-1 md:mb-2
               ${theme.calendar.weekDay}
               ${isMobile ? 'text-xs' : ''}
             `}>
               {isMobile ? day.charAt(0) : day}
             </div>
           ))}
-          
+
           {(() => {
             const year = currentMonth.getFullYear();
             const month = currentMonth.getMonth();
             const firstDayOfMonth = getFirstDayOfMonth(year, month);
             const daysInMonth = getDaysInMonth(year, month);
             const daysInPrevMonth = getDaysInMonth(year, month - 1);
-            
+
             const days = [];
 
             // Previous month days
@@ -205,20 +244,29 @@ export const Calendar: React.FC<CalendarProps> = ({
               const completedHabits = getCompletedHabitsForDate(date);
               const incompleteHabits = habits.filter(habit => !habit.completedDates.includes(date));
               const isToday = date === todayStr;
-              
+
               return (
                 <div
                   key={date}
+                  onClick={() => {
+                    if (isMobile) {
+                      setSelectedDate({
+                        date,
+                        completedHabits,
+                        incompleteHabits
+                      });
+                    }
+                  }}
                   className={`
                     border rounded-lg relative
                     ${theme.border}
                     ${isCurrentMonth ? theme.calendar.day.default : theme.calendar.day.otherMonth}
                     ${isToday ? theme.calendar.day.today : ''}
-                    ${isMobile ? 'p-1 min-h-[60px]' : 'p-3 min-h-[80px]'}
+                    ${isMobile ? 'p-1 min-h-[60px] active:bg-gray-100 dark:active:bg-gray-800' : 'p-3 min-h-[80px]'}
                   `}
                 >
                   <span className={`
-                    font-medium 
+                    font-medium
                     ${isCurrentMonth ? theme.text : theme.calendar.day.otherMonth}
                     ${isToday ? 'relative' : ''}
                     ${isMobile ? 'text-sm' : ''}
@@ -230,7 +278,7 @@ export const Calendar: React.FC<CalendarProps> = ({
                       absolute bottom-1 left-1/2 transform -translate-x-1/2
                       ${isMobile ? 'w-full px-1' : ''}
                     `}>
-                      <div 
+                      <div
                         className="relative"
                         {...(!isMobile ? {
                           onMouseEnter: (e) => showTooltip(e, date, completedHabits, incompleteHabits),
@@ -241,8 +289,8 @@ export const Calendar: React.FC<CalendarProps> = ({
                           <div className="flex flex-col items-center">
                             <div className={`
                               text-xs font-medium px-1.5 py-0.5 rounded
-                              ${completedHabits.length > 0 
-                                ? 'text-green-700 dark:text-green-300' 
+                              ${completedHabits.length > 0
+                                ? 'text-green-700 dark:text-green-300'
                                 : `${theme.text} opacity-75`
                               }
                             `}>
@@ -257,15 +305,15 @@ export const Calendar: React.FC<CalendarProps> = ({
                             <div className={`
                               h-6 px-2.5 rounded-full cursor-pointer
                               transition-all duration-200 flex items-center justify-center gap-1
-                              ${completedHabits.length > 0 
-                                ? 'bg-green-100 dark:bg-green-900/30 shadow-[0_2px_10px] shadow-green-900/20 dark:shadow-green-100/20' 
+                              ${completedHabits.length > 0
+                                ? 'bg-green-100 dark:bg-green-900/30 shadow-[0_2px_10px] shadow-green-900/20 dark:shadow-green-100/20'
                                 : `bg-gray-100 dark:bg-gray-800 shadow-sm`
                               }
                             `}>
                               <span className={`
                                 text-xs font-medium
-                                ${completedHabits.length > 0 
-                                  ? 'text-green-700 dark:text-green-300' 
+                                ${completedHabits.length > 0
+                                  ? 'text-green-700 dark:text-green-300'
                                   : 'text-gray-600 dark:text-gray-400'
                                 }
                               `}>
@@ -284,7 +332,81 @@ export const Calendar: React.FC<CalendarProps> = ({
         </div>
       </div>
 
-      {/* Tooltip portal - only render on desktop */}
+      {/* Mobile Selected Date Details */}
+      {isMobile && selectedDate && (
+        <div className={`
+          mt-6 p-4 rounded-lg
+          ${theme.cardBackground}
+          border ${theme.border}
+          shadow-md
+        `}>
+          <div className="mb-4">
+            <h3 className={`text-lg font-medium ${theme.text}`}>
+              {new Date(selectedDate.date).toLocaleDateString('default', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </h3>
+          </div>
+
+          {selectedDate.completedHabits.length > 0 && (
+            <div className="mb-4">
+              <span className="text-emerald-500 dark:text-emerald-400 font-medium block mb-2.5 text-sm">
+                ✓ Completed
+              </span>
+              <ul className="space-y-2">
+                {selectedDate.completedHabits.map(habit => (
+                  <li
+                    key={habit.id}
+                    className={`${theme.text} text-sm truncate flex items-center justify-between group`}
+                  >
+                    <span className="truncate mr-2">{habit.name}</span>
+                    <button
+                      onClick={(e) => handleMobileHabitToggle(e, habit.id, selectedDate.date)}
+                      className={`p-1.5 rounded-lg transition-colors ${theme.habitItem}`}
+                    >
+                      <Check className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {selectedDate.incompleteHabits.length > 0 && (
+            <div>
+              <span className="text-rose-500 dark:text-rose-400 font-medium block mb-2.5 text-sm">
+                ○ Pending
+              </span>
+              <ul className="space-y-2">
+                {selectedDate.incompleteHabits.map(habit => (
+                  <li
+                    key={habit.id}
+                    className={`${theme.text} text-sm truncate flex items-center justify-between group`}
+                  >
+                    <span className="truncate mr-2">{habit.name}</span>
+                    <button
+                      onClick={(e) => handleMobileHabitToggle(e, habit.id, selectedDate.date)}
+                      className={`p-1.5 rounded-lg transition-colors ${theme.habitItem}`}
+                    >
+                      <Check className="h-4 w-4 text-gray-400 dark:text-gray-500 hover:text-emerald-500 dark:hover:text-emerald-400" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {selectedDate.completedHabits.length === 0 && selectedDate.incompleteHabits.length === 0 && (
+            <p className={`text-sm ${theme.mutedText} text-center py-4`}>
+              No habits tracked for this date
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Desktop Tooltip Portal - unchanged */}
       {!isMobile && tooltipData && createPortal(
         <div
           ref={tooltipRef}
@@ -293,8 +415,8 @@ export const Calendar: React.FC<CalendarProps> = ({
           className={`
             fixed
             transition-all duration-150 ease-in-out
-            ${tooltipData.isVisible 
-              ? 'opacity-100 translate-y-0' 
+            ${tooltipData.isVisible
+              ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-1'
             }
           `}
@@ -306,7 +428,7 @@ export const Calendar: React.FC<CalendarProps> = ({
             zIndex: 100,
           }}
         >
-          <div 
+          <div
             className={`
               rounded-2xl p-5
               w-[240px]
@@ -321,7 +443,7 @@ export const Calendar: React.FC<CalendarProps> = ({
             `}
           >
             {/* Updated Arrow */}
-            <div 
+            <div
               className={`
                 absolute -bottom-[6px] left-1/2 -translate-x-1/2
                 w-3 h-3 rotate-45
@@ -330,7 +452,7 @@ export const Calendar: React.FC<CalendarProps> = ({
                 border-t-0 border-l-0
               `}
             />
-            
+
             <div className="relative">
               {tooltipData.completedHabits.length > 0 && (
                 <div className="mb-4">
@@ -339,8 +461,8 @@ export const Calendar: React.FC<CalendarProps> = ({
                   </span>
                   <ul className="space-y-2">
                     {tooltipData.completedHabits.map(habit => (
-                      <li 
-                        key={habit.id} 
+                      <li
+                        key={habit.id}
                         className={`${theme.text} text-sm truncate flex items-center justify-between group`}
                       >
                         <span className="truncate mr-2">{habit.name}</span>
@@ -362,8 +484,8 @@ export const Calendar: React.FC<CalendarProps> = ({
                   </span>
                   <ul className="space-y-2">
                     {tooltipData.incompleteHabits.map(habit => (
-                      <li 
-                        key={habit.id} 
+                      <li
+                        key={habit.id}
                         className={`${theme.text} text-sm truncate flex items-center justify-between group`}
                       >
                         <span className="truncate mr-2">{habit.name}</span>

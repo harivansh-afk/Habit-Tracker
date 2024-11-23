@@ -11,53 +11,43 @@ export const useHabits = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      fetchHabits();
-    } else {
-      setHabits([]);
-      setLoading(false);
-    }
-  }, [user?.id]);
-
   const fetchHabits = async () => {
     if (!user) {
       setHabits([]);
       setLoading(false);
       return;
     }
-    
+
     try {
       setLoading(true);
       setError(null);
-      
-      const { data, error } = await supabase
+
+      // Fetch habits
+      const { data: habitsData, error: habitsError } = await supabase
         .from('habits')
-        .select(`
-          id,
-          name,
-          created_at,
-          best_streak,
-          habit_completions (
-            completion_date
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (habitsError) throw habitsError;
 
-      const formattedHabits = data.map(habit => ({
-        id: habit.id,
-        name: habit.name,
-        created_at: habit.created_at,
-        best_streak: habit.best_streak,
-        completedDates: habit.habit_completions?.map(
-          (completion: { completion_date: string }) => completion.completion_date
-        ) || []
+      // Fetch all completions for user's habits
+      const { data: completionsData, error: completionsError } = await supabase
+        .from('habit_completions')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (completionsError) throw completionsError;
+
+      // Combine habits with their completions
+      const habitsWithCompletions = habitsData.map(habit => ({
+        ...habit,
+        completedDates: completionsData
+          .filter(completion => completion.habit_id === habit.id)
+          .map(completion => completion.completion_date)
       }));
 
-      setHabits(formattedHabits);
+      setHabits(habitsWithCompletions);
     } catch (err) {
       console.error('Error fetching habits:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch habits');
@@ -66,20 +56,67 @@ export const useHabits = () => {
     }
   };
 
+  // Set up real-time subscription for habits and completions
+  useEffect(() => {
+    if (!user) return;
+
+    // Subscribe to habits changes
+    const habitsSubscription = supabase
+      .channel('habits-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'habits',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          fetchHabits();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to habit completions changes
+    const completionsSubscription = supabase
+      .channel('completions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'habit_completions',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          fetchHabits();
+        }
+      )
+      .subscribe();
+
+    // Initial fetch
+    fetchHabits();
+
+    // Cleanup subscriptions
+    return () => {
+      habitsSubscription.unsubscribe();
+      completionsSubscription.unsubscribe();
+    };
+  }, [user]);
+
   const addHabit = async (name: string): Promise<boolean> => {
     if (!user || !name.trim()) return false;
-    
+
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('habits')
-        .insert([{ 
-          name: name.trim(), 
+        .insert([{
+          name: name.trim(),
           user_id: user.id,
           created_at: new Date().toISOString(),
           best_streak: 0
         }])
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
 
@@ -94,11 +131,12 @@ export const useHabits = () => {
 
   const toggleHabit = async (id: number, date: string): Promise<void> => {
     if (!user) return;
-    
+
     try {
-      const isCompleted = habits
-        .find(h => h.id === id)
-        ?.completedDates.includes(date);
+      const habit = habits.find(h => h.id === id);
+      if (!habit) throw new Error('Habit not found');
+
+      const isCompleted = habit.completedDates.includes(date);
 
       if (isCompleted) {
         // Remove completion
@@ -106,7 +144,8 @@ export const useHabits = () => {
           .from('habit_completions')
           .delete()
           .eq('habit_id', id)
-          .eq('completion_date', date);
+          .eq('completion_date', date)
+          .eq('user_id', user.id);
 
         if (error) throw error;
       } else {
@@ -135,18 +174,17 @@ export const useHabits = () => {
         })
       );
 
-      // Fetch updated data to ensure consistency
-      await fetchHabits();
     } catch (err) {
       console.error('Error toggling habit:', err);
       setError(err instanceof Error ? err.message : 'Failed to toggle habit');
+      // Refresh habits to ensure consistency
       await fetchHabits();
     }
   };
 
   const updateHabit = async (id: number, name: string): Promise<void> => {
     if (!user || !name.trim()) return;
-    
+
     try {
       const { error } = await supabase
         .from('habits')
@@ -172,7 +210,7 @@ export const useHabits = () => {
 
   const deleteHabit = async (id: number): Promise<void> => {
     if (!user) return;
-    
+
     try {
       const { error } = await supabase
         .from('habits')
@@ -196,10 +234,10 @@ export const useHabits = () => {
     habits,
     loading,
     error,
-    fetchHabits,
     addHabit,
     toggleHabit,
     updateHabit,
-    deleteHabit
+    deleteHabit,
+    fetchHabits
   };
-}; 
+};
