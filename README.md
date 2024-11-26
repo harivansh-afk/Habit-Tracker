@@ -150,4 +150,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Live Demo
 
-Check out the live demo at: [Habit Tracker Demo](https://habit-tracker-2-mhq2ufsrh-rathiharivansh-gmailcoms-projects.vercel.app/)
+Check out the live webapp at: [Habit Tracker](https://habit-tracker-2-eta.vercel.app/)
