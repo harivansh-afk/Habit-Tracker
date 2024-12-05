@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Sun, Moon, Plus, Circle, User } from 'lucide-react';
+import { Plus, Circle, User } from 'lucide-react';
 import { HabitList } from './components/HabitList';
 import { Calendar } from './components/Calendar';
 import { Sidebar } from './components/Sidebar';
@@ -16,29 +16,28 @@ import { PreferencesProvider, usePreferences } from './contexts/PreferencesConte
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 function HabitTrackerContent() {
-  const { theme, isDark, toggleDarkMode, defaultView, habitSort } = useThemeContext();
+  const { theme, habitSort } = useThemeContext();
   const [newHabit, setNewHabit] = useState('');
-  const [activeView, setActiveView] = useState<'habits' | 'calendar' | 'settings'>(defaultView);
+  const [activeView, setActiveView] = useState<'habits' | 'calendar' | 'settings'>('habits');
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const { user, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
   const [authView, setAuthView] = useState<'login' | 'signup'>('login');
   const { preferences } = usePreferences();
 
-  const { 
-    habits, 
-    fetchHabits, 
-    addHabit: addHabitApi, 
-    toggleHabit, 
-    updateHabit, 
-    deleteHabit, 
-    error 
+  const {
+    habits,
+    fetchHabits,
+    addHabit: addHabitApi,
+    toggleHabit,
+    updateHabit,
+    deleteHabit,
+    error
   } = useHabits();
-  
-  const { 
-    currentWeek, 
-    setCurrentWeek, 
-    getCurrentWeekDates, 
-    changeWeek 
+
+  const {
+    currentWeek,
+    setCurrentWeek,
+    getCurrentWeekDates
   } = useWeek();
 
   useEffect(() => {
@@ -112,7 +111,7 @@ function HabitTrackerContent() {
         </div>
 
         <div className={`
-          mb-8 p-4 md:p-6 
+          mb-8 p-4 md:p-6
           rounded-lg shadow-md
           ${theme.cardBackground}
           ${theme.border}
@@ -122,8 +121,8 @@ function HabitTrackerContent() {
           <form onSubmit={handleAddHabit} className="space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">
             <div className="flex-1 relative">
               <Plus className={`
-                absolute left-4 top-1/2 transform -translate-y-1/2 
-                h-5 w-5 
+                absolute left-4 top-1/2 transform -translate-y-1/2
+                h-5 w-5
                 ${theme.text} opacity-50
               `} />
               <input
@@ -132,7 +131,7 @@ function HabitTrackerContent() {
                 onChange={(e) => setNewHabit(e.target.value)}
                 placeholder="Add a new habit"
                 className={`
-                  w-full px-12 py-3 
+                  w-full px-12 py-3
                   rounded-lg
                   transition-all duration-200
                   ${theme.input}
@@ -146,11 +145,11 @@ function HabitTrackerContent() {
               disabled={!newHabit.trim()}
               className={`
                 w-full md:w-auto
-                px-6 py-3 
+                px-6 py-3
                 rounded-lg
                 transition-all duration-200
                 flex items-center justify-center gap-2
-                ${theme.button.primary} 
+                ${theme.button.primary}
                 disabled:opacity-50
                 ${newHabit.trim() ? 'hover:translate-x-1' : ''}
               `}
@@ -169,22 +168,10 @@ function HabitTrackerContent() {
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => changeWeek('prev')}
-                  className={`p-2 rounded-lg ${theme.button.icon}`}
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                <button
                   onClick={goToCurrentWeek}
                   className={`px-4 py-2 rounded-lg ${theme.button.secondary}`}
                 >
                   Today
-                </button>
-                <button
-                  onClick={() => changeWeek('next')}
-                  className={`p-2 rounded-lg ${theme.button.icon}`}
-                >
-                  <ChevronRight className="h-5 w-5" />
                 </button>
               </div>
             </div>
